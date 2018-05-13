@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MADDemo18</string>
+    <string name="welcome_message">Hello Android!</string>
+    <string name="popup_message">Selected: %s</string>
+    <string name="itemDescriptionLabel">Description</string>
+    <string name="itemNameLabel">Name</string>
+    <string name="itemSaveButton">Save</string>
+</resources>
