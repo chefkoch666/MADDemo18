@@ -68,7 +68,7 @@ public class OverviewActivity extends AppCompatActivity {
 
     protected void showDetailviewForEdit(DataItem item) {
         Intent callDetailviewIntent = new Intent(this,DetailviewActivity.class);
-        callDetailviewIntent.putExtra(DetailviewActivity.ARG_ITEM,item);
+        callDetailviewIntent.putExtra(DetailviewActivity.ARG_ITEM_ID,item);
         startActivityForResult(callDetailviewIntent,CALL_EDIT_ITEM);
     }
 
@@ -82,7 +82,8 @@ public class OverviewActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CALL_EDIT_ITEM || requestCode == CALL_CREATE_ITEM) {
             if (resultCode == RESULT_OK) {
-                DataItem item = (DataItem)data.getSerializableExtra(DetailviewActivity.ARG_ITEM);
+                long itemId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
+                DataItem item = (DataItem)data.getSerializableExtra(DetailviewActivity.ARG_ITEM_ID);
                 if (requestCode == CALL_EDIT_ITEM) {
                     updateItemInList(item);
                 }

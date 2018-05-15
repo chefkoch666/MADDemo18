@@ -15,7 +15,7 @@ public class DetailviewActivity extends AppCompatActivity {
 
     private IDataItemCRUDOperations crudOperations;
 
-    public static final String ARG_ITEM = "item";
+    public static final String ARG_ITEM_ID = "itemId";
 
     private TextView itemNameText;
     private FloatingActionButton saveItemButton;
@@ -32,9 +32,13 @@ public class DetailviewActivity extends AppCompatActivity {
         itemNameText = findViewById(R.id.itemName);
         saveItemButton = findViewById(R.id.saveItem);
 
-        this.item = (DataItem)getIntent().getSerializableExtra(ARG_ITEM);
-        if (this.item != null) {
+        long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
+        if (itemId != -1) {
+            this.item = crudOperations.readItem(itemId);
             itemNameText.setText(this.item.getName());
+        }
+        else {
+            this.item = new DataItem();
         }
 
         saveItemButton.setOnClickListener(new View.OnClickListener() {
@@ -45,16 +49,18 @@ public class DetailviewActivity extends AppCompatActivity {
         });
     }
 
+
     protected void saveItem() {
 
-        if (this.item == null) {
-            this.item = new DataItem();
+        if (this.item.getId() == -1) {
+            long itemId = crudOperations.createItem(this.item);
+            this.item.setId(itemId);
         }
 
         this.item.setName(this.itemNameText.getText().toString());
 
         Intent returnIntent = new Intent();
-        returnIntent.putExtra(ARG_ITEM,this.item);
+        returnIntent.putExtra(ARG_ITEM_ID,this.item.getId());
 
         setResult(RESULT_OK,returnIntent);
         finish();

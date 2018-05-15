@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class DataItem implements Serializable {
 
-    private long id;
+    private long id = -1;
     private String name;
     private long expiry;
     private boolean done;
