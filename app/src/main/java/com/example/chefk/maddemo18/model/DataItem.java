@@ -48,4 +48,8 @@ public class DataItem implements Serializable {
     public void setDone(boolean done) {
         this.done = done;
     }
+
+    public  String toString() {
+        return this.name;
+    }
 }
