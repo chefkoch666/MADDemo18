@@ -91,7 +91,7 @@ public class OverviewActivity extends AppCompatActivity {
 
     }
 
-    protected void addItemToList(final DataItem item) {
+    protected void addItemToList(DataItem item) {
         this.listViewAdapter.add(item);
         ((ListView)this.listView).setSelection(this.listViewAdapter.getPosition(item));
     }
