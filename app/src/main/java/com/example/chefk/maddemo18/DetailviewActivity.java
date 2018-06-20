@@ -12,11 +12,12 @@ import android.widget.TextView;
 import com.example.chefk.maddemo18.databinding.ActivityDetailviewBinding;
 import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
+import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.view.DetailviewActions;
 
 public class DetailviewActivity extends AppCompatActivity implements DetailviewActions {
 
-    private IDataItemCRUDOperations crudOperations;
+    private IDataItemCRUDOperationsAsync crudOperations;
 
     public static final String ARG_ITEM_ID = "itemId";
 
@@ -26,13 +27,20 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActivityDetailviewBinding bindingMediator =  DataBindingUtil.setContentView(this, R.layout.activity_detailview);
+        final ActivityDetailviewBinding bindingMediator =  DataBindingUtil.setContentView(this, R.layout.activity_detailview);
 
         crudOperations = ((DataItemApplication)getApplication()).getCRUDOperations();
 
         long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
         if (itemId != -1) {
-            this.item = crudOperations.readItem(itemId);
+            //this.item = crudOperations.readItem(itemId);
+            crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
+                @Override
+                public void onresult(DataItem result) {
+                    item = result;
+                    doDatabinding(bindingMediator);
+                }
+            });
         }
         else {
             this.item = new DataItem();
@@ -42,14 +50,28 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         bindingMediator.setActions(this);
     }
 
+    private void doDatabinding(ActivityDetailviewBinding bindingMediator) {
+        bindingMediator.setItem(item);
+        bindingMediator.setActions(DetailviewActivity.this);
+    }
 
     public void saveItem() {
 
         if (this.item.getId() == -1) {
-            long itemId = crudOperations.createItem(this.item);
-            this.item.setId(itemId);
+            crudOperations.createItem(this.item, new IDataItemCRUDOperationsAsync.ResultCallback<Long>() {
+                @Override
+                public void onresult(Long result) {
+                    item.setId(result);
+                    returnToOverview();
+                }
+            });
         }
+        else {
+            returnToOverview();
+        }
+    }
 
+    public void returnToOverview() {
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ARG_ITEM_ID,this.item.getId());
 

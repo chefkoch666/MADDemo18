@@ -1,6 +1,7 @@
 package com.example.chefk.maddemo18;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,16 +10,19 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
+import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 
 import org.w3c.dom.Text;
 
@@ -26,11 +30,13 @@ import java.util.List;
 
 public class OverviewActivity extends AppCompatActivity {
 
-    private IDataItemCRUDOperations crudOperations;
+    private IDataItemCRUDOperationsAsync crudOperations;
 
     private ArrayAdapter<DataItem> listViewAdapter;
     private ViewGroup listView;
     private FloatingActionButton createItemButton;
+
+    private ProgressBar progress;
 
     private static final int CALL_EDIT_ITEM = 0;
     private static final int CALL_CREATE_ITEM = 1;
@@ -44,6 +50,7 @@ public class OverviewActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.listView);
         createItemButton = findViewById(R.id.createItem);
+        progress = findViewById(R.id.progressBar);
 
         listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem){
             @NonNull
@@ -74,18 +81,33 @@ public class OverviewActivity extends AppCompatActivity {
         listViewAdapter.setNotifyOnChange(true);
         ((ListView)listView).setAdapter(listViewAdapter);
 
-        new Thread(new Runnable() {
+        progress.setVisibility(View.VISIBLE);
+        crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
             @Override
-            public void run() {
-                final List<DataItem> items = crudOperations.readAllItems();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        listViewAdapter.addAll(items);
-                    }
-                });
+            public void onresult(List<DataItem> result) {
+                listViewAdapter.addAll(result);
+                progress.setVisibility(View.GONE);
             }
-        }).start();
+        });
+
+//        new AsyncTask<Void,Void,List<DataItem>>() {
+//
+//            @Override
+//            protected void onPreExecute() {
+//                progress.setVisibility(View.VISIBLE);
+//            }
+//
+//            @Override
+//            protected List<DataItem> doInBackground(Void... voids) {
+//                return crudOperations.readAllItems();
+//            }
+//
+//            @Override
+//            protected void onPostExecute(List<DataItem> items) {
+//                listViewAdapter.addAll(items);
+//                progress.setVisibility(View.GONE);
+//            }
+//        }.execute();
 
         ((ListView) listView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -126,21 +148,34 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
         if (requestCode == CALL_EDIT_ITEM || requestCode == CALL_CREATE_ITEM) {
             if (resultCode == RESULT_OK) {
                 long itemId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
-                DataItem item = crudOperations.readItem(itemId);
-                if (requestCode == CALL_EDIT_ITEM) {
-                    updateItemInList(item);
-                }
-                else {
-                    addItemToList(item);
-                }
+
+               crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
+                   @Override
+                   public void onresult(DataItem result) {
+                       if (requestCode == CALL_EDIT_ITEM) {
+                           updateItemInList(result);
+                       }
+                       else {
+                           addItemToList(result);
+                       }
+                   }
+               });
             }
             else {
                 Toast.makeText(OverviewActivity.this, "no itemName received from detailview", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    /* sort items functionality */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.overview_optionsmenu,menu);
+        return true;
     }
 }
