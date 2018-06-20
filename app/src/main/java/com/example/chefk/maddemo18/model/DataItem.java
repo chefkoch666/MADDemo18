@@ -1,6 +1,7 @@
 package com.example.chefk.maddemo18.model;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
 public class DataItem implements Serializable {
 
@@ -50,6 +51,20 @@ public class DataItem implements Serializable {
     }
 
     public  String toString() {
-        return this.name;
+        return this.id + ":" + this.name;
     }
+
+    public static Comparator<DataItem> SORT_BY_NAME = new Comparator<DataItem>() {
+        @Override
+        public int compare(DataItem item1, DataItem item2) {
+            return String.valueOf(item1.getName()).toLowerCase().compareTo(String.valueOf(item2.getName()).toLowerCase());
+        }
+    };
+
+    public static Comparator<DataItem> SORT_BY_ID = new Comparator<DataItem>() {
+        @Override
+        public int compare(DataItem item1, DataItem item2) {
+            return (int)(item1.getId() - item2.getId());
+        }
+    };
 }

@@ -83,13 +83,18 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     @SuppressLint("StaticFieldLeak")
     @Override
     public void updateItem(long id, final DataItem item, final ResultCallback<Boolean> onresult) {
-//        new AsyncTask<Long,Void,DataItem>() {
-//
-//            @Override
-//            protected DataItem doInBackground(Long... longs) {
-//                return crudOperations.updateItem(longs[0], item);
-//            }
-//        }.execute(id);
+        new AsyncTask<Long,Void,Boolean>() {
+
+            @Override
+            protected Boolean doInBackground(Long... longs) {
+                return crudOperations.updateItem(longs[0], item);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                onresult.onresult(aBoolean);
+            }
+        }.execute(id);
     }
 
     @Override

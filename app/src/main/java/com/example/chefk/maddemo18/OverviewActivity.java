@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,12 +27,16 @@ import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class OverviewActivity extends AppCompatActivity {
 
     private IDataItemCRUDOperationsAsync crudOperations;
 
+    private List<DataItem> itemsList = new ArrayList<>();
     private ArrayAdapter<DataItem> listViewAdapter;
     private ViewGroup listView;
     private FloatingActionButton createItemButton;
@@ -40,6 +45,12 @@ public class OverviewActivity extends AppCompatActivity {
 
     private static final int CALL_EDIT_ITEM = 0;
     private static final int CALL_CREATE_ITEM = 1;
+
+    public enum SortMode {
+        SORT_BY_ID, SORT_BY_NAME;
+    }
+
+    private SortMode activeSortMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +63,9 @@ public class OverviewActivity extends AppCompatActivity {
         createItemButton = findViewById(R.id.createItem);
         progress = findViewById(R.id.progressBar);
 
-        listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem){
+        this.activeSortMode = SortMode.SORT_BY_ID;
+
+        listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem, itemsList){
             @NonNull
             @Override
             public View getView(int position, @Nullable View existingView, @NonNull ViewGroup parent) {
@@ -90,25 +103,6 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
-//        new AsyncTask<Void,Void,List<DataItem>>() {
-//
-//            @Override
-//            protected void onPreExecute() {
-//                progress.setVisibility(View.VISIBLE);
-//            }
-//
-//            @Override
-//            protected List<DataItem> doInBackground(Void... voids) {
-//                return crudOperations.readAllItems();
-//            }
-//
-//            @Override
-//            protected void onPostExecute(List<DataItem> items) {
-//                listViewAdapter.addAll(items);
-//                progress.setVisibility(View.GONE);
-//            }
-//        }.execute();
-
         ((ListView) listView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -128,6 +122,7 @@ public class OverviewActivity extends AppCompatActivity {
 
     protected void addItemToList(DataItem item) {
         this.listViewAdapter.add(item);
+        this.sortItems();
         ((ListView)this.listView).setSelection(this.listViewAdapter.getPosition(item));
     }
 
@@ -177,5 +172,30 @@ public class OverviewActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.overview_optionsmenu,menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.sortItems) {
+            this.activeSortMode = (this.activeSortMode == SortMode.SORT_BY_ID ? SortMode.SORT_BY_NAME : SortMode.SORT_BY_ID);
+            this.sortItems();
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void sortItems() {
+        Log.i("OverviewActivity","sortItems(): " + this.itemsList);
+
+        if (this.activeSortMode == SortMode.SORT_BY_ID) {
+            listViewAdapter.sort(DataItem.SORT_BY_ID);
+        }
+        else {
+            listViewAdapter.sort(DataItem.SORT_BY_NAME);
+        }
+
+
     }
 }
