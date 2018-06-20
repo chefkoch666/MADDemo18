@@ -22,6 +22,8 @@ import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
 
 import org.w3c.dom.Text;
 
+import java.util.List;
+
 public class OverviewActivity extends AppCompatActivity {
 
     private IDataItemCRUDOperations crudOperations;
@@ -72,7 +74,18 @@ public class OverviewActivity extends AppCompatActivity {
         listViewAdapter.setNotifyOnChange(true);
         ((ListView)listView).setAdapter(listViewAdapter);
 
-        listViewAdapter.addAll(crudOperations.readAllItems());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final List<DataItem> items = crudOperations.readAllItems();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        listViewAdapter.addAll(items);
+                    }
+                });
+            }
+        }).start();
 
         ((ListView) listView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
