@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -71,7 +73,7 @@ public class OverviewActivity extends AppCompatActivity {
             public View getView(int position, @Nullable View existingView, @NonNull ViewGroup parent) {
 
                 // obtain the data
-                DataItem item = this.getItem(position);
+                final DataItem item = this.getItem(position);
 
                 // obtain the view
                 View itemView = existingView;
@@ -87,6 +89,23 @@ public class OverviewActivity extends AppCompatActivity {
                 itemNameText.setText(item.getName());
                 TextView itemIdText = itemView.findViewById(R.id.itemId);
                 itemIdText.setText(String.valueOf(item.getId()));
+                CheckBox itemDoneCheckbox = itemView.findViewById(R.id.itemDone);
+
+                itemDoneCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
+                itemDoneCheckbox.setChecked(item.isDone());
+
+                itemDoneCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        item.setDone(isChecked);
+                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                            @Override
+                            public void onresult(Boolean result) {
+                                Toast.makeText(OverviewActivity.this,"Item with id " + item.getId() + " has been updates!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
 
                 return itemView;
             }

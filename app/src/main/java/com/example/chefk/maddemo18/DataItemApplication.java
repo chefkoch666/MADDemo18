@@ -22,8 +22,8 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     public void onCreate() {
         super.onCreate();
         this.crudOperations = /*new SimpleDataItemCRUDOperationsImpl()*/
-                new LocalDataItemCRUDOperations(this);
-                /*new RemoteDataItemCRUDOperationsImpl();*/
+                /* new LocalDataItemCRUDOperations(this); */
+                new RemoteDataItemCRUDOperationsImpl();
     }
 
     public IDataItemCRUDOperationsAsync getCRUDOperations() {
@@ -82,19 +82,19 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void updateItem(long id, final DataItem item, final ResultCallback<Boolean> onresult) {
-        new AsyncTask<Long,Void,Boolean>() {
+    public void updateItem(final long id, final DataItem item, final ResultCallback<Boolean> onresult) {
+        new AsyncTask<Void,Void,Boolean>() {
 
             @Override
-            protected Boolean doInBackground(Long... longs) {
-                return crudOperations.updateItem(longs[0], item);
+            protected Boolean doInBackground(Void... voids) {
+                return crudOperations.updateItem(id, item);
             }
 
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 onresult.onresult(aBoolean);
             }
-        }.execute(id);
+        }.execute();
     }
 
     @Override
