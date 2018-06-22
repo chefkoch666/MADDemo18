@@ -13,9 +13,9 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
     private SQLiteDatabase db;
 
     private static final String TABLE_DATAITEMS = "DATAITEMS";
-    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "EXPIRY", "DONE"};
+    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE"};
 
-    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,EXPIRY INTEGER,DONE INTEGER)";
+    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER,DONE INTEGER)";
 
     public LocalDataItemCRUDOperations(Context ctx) {
         this.db = ctx.openOrCreateDatabase("mysqlitedb.sqlite",Context.MODE_PRIVATE,null);
@@ -30,6 +30,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
 
         ContentValues values = new ContentValues();
         values.put("NAME",item.getName());
+        values.put("DESCRIPTION",item.getDescription());
         values.put("EXPIRY",item.getExpiry());
         values.put("DONE",item.isDone() ? 1 : 0);
 
@@ -58,6 +59,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         DataItem item = new DataItem();
         item.setId(cursor.getLong(cursor.getColumnIndex("ID")));
         item.setName(cursor.getString(cursor.getColumnIndex("NAME")));
+        item.setDescription(cursor.getString(cursor.getColumnIndex("DESCRIPTION")));
         item.setExpiry(cursor.getLong(cursor.getColumnIndex("EXPIRY")));
         item.setDone(cursor.getInt(cursor.getColumnIndex("DONE")) == 1);
 
@@ -77,7 +79,13 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
 
     @Override
     public boolean updateItem(long id, DataItem item) {
-        return false;
+        ContentValues values = new ContentValues();
+        values.put("NAME",item.getName());
+        values.put("DESCRIPTION",item.getDescription());
+        values.put("EXPIRY",item.getExpiry());
+        values.put("DONE",item.isDone());
+        db.update(TABLE_DATAITEMS,values,"id=?", new String[]{String.valueOf(id)});
+        return true;
     }
 
     @Override

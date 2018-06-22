@@ -4,5 +4,10 @@
     <string name="popup_message">Selected: %s</string>
     <string name="itemDescriptionLabel">Description</string>
     <string name="itemNameLabel">Name</string>
+    <string name="hintNameEdit">Enter the name</string>
+    <string name="hintDescriptionEdit">Enter the description</string>
     <string name="itemSaveButton">Save</string>
+    <string name="is_done">Is this ToDo done?</string>
+    <string name="hint_done">Is it done?</string>
+    <string name="favoriteLabel">Favorite</string>
 </resources>

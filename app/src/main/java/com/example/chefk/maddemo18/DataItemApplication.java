@@ -22,8 +22,8 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     public void onCreate() {
         super.onCreate();
         this.crudOperations = /*new SimpleDataItemCRUDOperationsImpl()*/
-                /* new LocalDataItemCRUDOperations(this); */
-                new RemoteDataItemCRUDOperationsImpl();
+                 new LocalDataItemCRUDOperations(this);
+                /* new RemoteDataItemCRUDOperationsImpl(); */
     }
 
     public IDataItemCRUDOperationsAsync getCRUDOperations() {

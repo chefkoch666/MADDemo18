@@ -2,11 +2,13 @@ package com.example.chefk.maddemo18.model;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.Date;
 
 public class DataItem implements Serializable {
 
     private long id = -1;
     private String name;
+    private String description;
     private long expiry;
     private boolean done;
 
@@ -32,6 +34,14 @@ public class DataItem implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public long getExpiry() {
