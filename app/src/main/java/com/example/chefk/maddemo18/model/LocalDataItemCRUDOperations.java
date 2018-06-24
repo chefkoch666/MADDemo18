@@ -13,9 +13,9 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
     private SQLiteDatabase db;
 
     private static final String TABLE_DATAITEMS = "DATAITEMS";
-    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE"};
+    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE", "FAVORITE"};
 
-    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER,DONE INTEGER)";
+    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER,DONE INTEGER,FAVORITE INTEGER)";
 
     public LocalDataItemCRUDOperations(Context ctx) {
         this.db = ctx.openOrCreateDatabase("mysqlitedb.sqlite",Context.MODE_PRIVATE,null);
@@ -33,6 +33,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         values.put("DESCRIPTION",item.getDescription());
         values.put("EXPIRY",item.getExpiry());
         values.put("DONE",item.isDone() ? 1 : 0);
+        values.put("FAVORITE",item.isFavorite() ? 1 : 0);
 
         long id = db.insert(TABLE_DATAITEMS,null,values);
         item.setId(id);
@@ -62,6 +63,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         item.setDescription(cursor.getString(cursor.getColumnIndex("DESCRIPTION")));
         item.setExpiry(cursor.getLong(cursor.getColumnIndex("EXPIRY")));
         item.setDone(cursor.getInt(cursor.getColumnIndex("DONE")) == 1);
+        item.setFavorite(cursor.getInt(cursor.getColumnIndex("FAVORITE")) == 1);
 
         return item;
     }
@@ -84,6 +86,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         values.put("DESCRIPTION",item.getDescription());
         values.put("EXPIRY",item.getExpiry());
         values.put("DONE",item.isDone());
+        values.put("FAVORITE",item.isFavorite());
         db.update(TABLE_DATAITEMS,values,"id=?", new String[]{String.valueOf(id)});
         return true;
     }

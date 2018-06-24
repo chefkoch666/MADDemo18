@@ -35,7 +35,7 @@ import java.util.TimeZone;
 
 import static java.security.AccessController.getContext;
 
-public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, View.OnClickListener {
+public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private IDataItemCRUDOperationsAsync crudOperations;
 
@@ -45,8 +45,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
     Button btnDatePicker, btnTimePicker;
     EditText txtDate, txtTime;
-    CheckBox itemDoneCheckbox;
-    // private int mYear, mMonth, mDay, mHour, mMinute; // moved into onClick(View v)
+    CheckBox itemDoneCheckbox, itemFavoriteCheckbox;
     private String pickedDate = ""; // is used fot Date/Time picker to set the text of EditText only once
 
     @Override
@@ -63,18 +62,19 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         btnDatePicker.setOnClickListener(this);
         btnTimePicker.setOnClickListener(this);
         itemDoneCheckbox = findViewById(R.id.itemDoneCheckbox);
+        itemFavoriteCheckbox = findViewById(R.id.itemFavoriteCheckBox);
 
         crudOperations = ((DataItemApplication)getApplication()).getCRUDOperations();
 
         long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
         if (itemId != -1) {
-            //this.item = crudOperations.readItem(itemId);
             crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
                 @Override
                 public void onresult(DataItem result) {
                     item = result;
                     doDatabinding(bindingMediator);
                     itemDoneCheckbox.setChecked(item.isDone()); // Zeile ggf wieder loeschen, funktioniert vielleicht nicht
+                    itemFavoriteCheckbox.setChecked(item.isFavorite());
                 }
             });
         }
@@ -85,9 +85,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         bindingMediator.setItem(this.item);
         bindingMediator.setActions(this);
 
-        //itemDoneCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
-        //itemDoneCheckbox.setChecked(item.isDone());
-        /*
+        itemFavoriteCheckbox.setOnCheckedChangeListener(this);
+
         itemDoneCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -100,7 +99,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                 });
             }
         });
-        */
     }
 
     private void doDatabinding(ActivityDetailviewBinding bindingMediator) {
@@ -164,10 +162,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay,
                                               int minute) {
-                            //txtTime.setText(hourOfDay + ":" + minute);
                             pickedDate = pickedDate + " "  + hourOfDay + ":" + minute;
                             txtDate.setText(pickedDate);
-                            //txtDate.setText(txtDate.getText().toString() + " "  + hourOfDay + ":" + minute);
                         }
                     }, mHour, mMinute, true);
             timePickerDialog.show();
@@ -179,7 +175,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                                               int monthOfYear, int dayOfMonth) {
                             // is called first
                             pickedDate = (dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
-                            //txtDate.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
                         }
                     }, mYear, mMonth, mDay);
             datePickerDialog.show();
@@ -188,6 +183,18 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         if (v == btnTimePicker) {
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm", Locale.US);
             Log.i("DetailviewActivity", "Conversion of txtDate Text is : " + txtDate.getEditableText().toString());
+        }
+    }
+
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView == itemFavoriteCheckbox) {
+            item.setFavorite(isChecked);
+            crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                @Override
+                public void onresult(Boolean result) {
+                    Toast.makeText(DetailviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

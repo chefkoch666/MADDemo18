@@ -11,6 +11,7 @@ public class DataItem implements Serializable {
     private String description;
     private long expiry;
     private boolean done;
+    private boolean favorite;
 
     public DataItem() {
 
@@ -77,4 +78,12 @@ public class DataItem implements Serializable {
             return (int)(item1.getId() - item2.getId());
         }
     };
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
 }
