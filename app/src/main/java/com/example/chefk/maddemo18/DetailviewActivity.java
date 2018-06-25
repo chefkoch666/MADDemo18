@@ -106,6 +106,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         bindingMediator.setActions(DetailviewActivity.this);
     }
 
+    /*
     @InverseBindingAdapter(attribute = "android:text")
     public static String captureStringValue(EditText view) {
         String value = "";
@@ -116,6 +117,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         }
         return value;
     }
+    */
 
     public void saveItem() {
         if (this.item.getId() == -1) {

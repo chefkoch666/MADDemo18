@@ -136,7 +136,6 @@ public class OverviewActivity extends AppCompatActivity {
                 showDetailviewForCreate();
             }
         });
-
     }
 
     protected void addItemToList(DataItem item) {
@@ -172,21 +171,18 @@ public class OverviewActivity extends AppCompatActivity {
                    public void onresult(DataItem result) {
                        if (requestCode == CALL_EDIT_ITEM) {
                            updateItemInList(result);
-                       }
-                       else {
+                       } else {
                            addItemToList(result);
                        }
                    }
                });
-            }
-            else {
+            } else {
                 Toast.makeText(OverviewActivity.this, "no itemName received from detailview", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     /* sort items functionality */
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.overview_optionsmenu,menu);
@@ -199,22 +195,18 @@ public class OverviewActivity extends AppCompatActivity {
             this.activeSortMode = (this.activeSortMode == SortMode.SORT_BY_ID ? SortMode.SORT_BY_NAME : SortMode.SORT_BY_ID);
             this.sortItems();
             return true;
-        }
-        else {
+        } else {
             return super.onOptionsItemSelected(item);
         }
     }
 
     private void sortItems() {
         Log.i("OverviewActivity","sortItems(): " + this.itemsList);
-
         if (this.activeSortMode == SortMode.SORT_BY_ID) {
             listViewAdapter.sort(DataItem.SORT_BY_ID);
         }
         else {
             listViewAdapter.sort(DataItem.SORT_BY_NAME);
         }
-
-
     }
 }
