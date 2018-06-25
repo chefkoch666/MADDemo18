@@ -43,8 +43,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
     private DataItem item;
 
-    Button btnDatePicker, btnTimePicker;
-    EditText txtDate, txtTime;
+    Button btnDatePicker, btnTimePicker; // TODO: remove Time Picker
+    EditText txtDate, txtTime; // TODO: remove Time Picker
     CheckBox itemDoneCheckbox, itemFavoriteCheckbox;
     private String pickedDate = ""; // is used fot Date/Time picker to set the text of EditText only once
 
@@ -56,11 +56,11 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
         // date / time picker (https://www.journaldev.com/9976/android-date-time-picker-dialog)
         btnDatePicker = findViewById(R.id.btn_date);
-        btnTimePicker = findViewById(R.id.btn_time);
+        btnTimePicker = findViewById(R.id.btn_time); // TODO: remove Time Picker
         txtDate = findViewById(R.id.in_date);
-        txtTime = findViewById(R.id.in_time);
+        txtTime = findViewById(R.id.in_time); // TODO: remove Time Picker
         btnDatePicker.setOnClickListener(this);
-        btnTimePicker.setOnClickListener(this);
+        btnTimePicker.setOnClickListener(this); // TODO: remove Time Picker
         itemDoneCheckbox = findViewById(R.id.itemDoneCheckbox);
         itemFavoriteCheckbox = findViewById(R.id.itemFavoriteCheckBox);
 

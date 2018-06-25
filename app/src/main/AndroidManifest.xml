@@ -19,7 +19,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".OverviewActivity">
+        <!-- <activity android:name=".OverviewActivity"> -->
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,10 +29,15 @@
         </activity>
         <activity
             android:name=".DetailviewActivity"
-            android:label="Edit Todo"></activity>
+            android:label="Edit Todo">
+        </activity>
         <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login">
+            android:name=".OverviewActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.example.chefk.maddemo18.OverviewActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -3,7 +3,11 @@ package com.example.chefk.maddemo18;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -55,7 +59,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * TODO: remove after connecting to a real authentication system.
      */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
+            "s@bht.de:000000", "bar@example.com:world"
     };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -67,6 +71,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+    private ShowOfflineWarningDialogFragment showOfflineWarning = new ShowOfflineWarningDialogFragment();
+    Button mEmailSignInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +88,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                    mEmailSignInButton.setEnabled(true);
                     attemptLogin();
                     return true;
                 }
@@ -88,7 +96,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setEnabled(false);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -100,11 +109,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
 
         if (hasNetworkConnectivity()) {
-            Toast.makeText(LoginActivity.this, "I am online", Toast.LENGTH_LONG).show();
+            Toast.makeText(LoginActivity.this, "Connected to a network", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(LoginActivity.this, "I am offline :-(", Toast.LENGTH_LONG).show();
-            Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-            startActivity(callOverviewIntent);
+            //Toast.makeText(LoginActivity.this, "I am offline :-(", Toast.LENGTH_LONG).show();
+            showOfflineWarning.show(getFragmentManager(),"offline-warning");
+
+            //Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+            //startActivity(callOverviewIntent);
         }
     }
 
@@ -155,11 +166,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
+        /*
         if (requestCode == REQUEST_READ_CONTACTS) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 populateAutoComplete();
             }
         }
+        */
+        populateAutoComplete();
     }
 
 
@@ -217,12 +231,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return ((email.contains("@")) && (email.contains(".de"))) ;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() == 6;
     }
 
     /**
@@ -281,12 +295,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         List<String> emails = new ArrayList<>();
+        emails.add("s@bht.de");
+        /*
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             emails.add(cursor.getString(ProfileQuery.ADDRESS));
             cursor.moveToNext();
         }
-
+*/
         addEmailsToAutoComplete(emails);
     }
 
@@ -358,7 +374,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                finish();
+                //finish();
+                Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+                startActivity(callOverviewIntent);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
@@ -369,6 +387,29 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    public static class ShowOfflineWarningDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.dialog_warning_offline)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+                            startActivity(callOverviewIntent);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+            startActivity(callOverviewIntent);
         }
     }
 }

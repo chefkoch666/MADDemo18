@@ -24,4 +24,6 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="ok">OK</string>
+    <string name="dialog_warning_offline">I\'m offline :-( Continuing with local data only.</string>
 </resources>
