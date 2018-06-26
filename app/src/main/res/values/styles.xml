@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="Delete.Button" parent="ThemeOverlay.AppCompat">
+        <item name="colorPrimary">@color/myRed</item>
+        <item name="colorAccent">@color/myRed</item>
+    </style>
+
 </resources>

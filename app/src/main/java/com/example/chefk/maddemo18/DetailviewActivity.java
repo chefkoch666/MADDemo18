@@ -1,12 +1,13 @@
 package com.example.chefk.maddemo18;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.databinding.InverseBindingAdapter;
-import android.databinding.ObservableField;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -25,15 +26,7 @@ import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.view.DetailviewActions;
 
-import java.text.DateFormat;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import static java.security.AccessController.getContext;
 
 public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
@@ -43,8 +36,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
     private DataItem item;
 
-    Button btnDatePicker, btnTimePicker; // TODO: remove Time Picker
-    EditText txtDate, txtTime; // TODO: remove Time Picker
+    Button btnDatePicker, btnDeleteTodo;
+    EditText txtDate;
     CheckBox itemDoneCheckbox, itemFavoriteCheckbox;
     private String pickedDate = ""; // is used fot Date/Time picker to set the text of EditText only once
 
@@ -56,11 +49,10 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
         // date / time picker (https://www.journaldev.com/9976/android-date-time-picker-dialog)
         btnDatePicker = findViewById(R.id.btn_date);
-        btnTimePicker = findViewById(R.id.btn_time); // TODO: remove Time Picker
+        btnDeleteTodo = findViewById(R.id.btn_delete);
         txtDate = findViewById(R.id.in_date);
-        txtTime = findViewById(R.id.in_time); // TODO: remove Time Picker
         btnDatePicker.setOnClickListener(this);
-        btnTimePicker.setOnClickListener(this); // TODO: remove Time Picker
+        btnDeleteTodo.setOnClickListener(this);
         itemDoneCheckbox = findViewById(R.id.itemDoneCheckbox);
         itemFavoriteCheckbox = findViewById(R.id.itemFavoriteCheckBox);
 
@@ -106,19 +98,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         bindingMediator.setActions(DetailviewActivity.this);
     }
 
-    /*
-    @InverseBindingAdapter(attribute = "android:text")
-    public static String captureStringValue(EditText view) {
-        String value = "";
-        try {
-            value = view.getText().toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return value;
-    }
-    */
-
     public void saveItem() {
         if (this.item.getId() == -1) {
             crudOperations.createItem(this.item, new IDataItemCRUDOperationsAsync.ResultCallback<Long>() {
@@ -136,6 +115,17 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             });
             returnToOverview();
         }
+    }
+
+    public void deleteItem() {
+            Log.i("DetailviewActivity", "Item with id : " + String.valueOf(this.item.getId()) + " has been deleted");
+            crudOperations.deleteItem(this.item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                @Override
+                public void onresult(Boolean result) {
+                    Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
+                    returnToOverview();
+                }
+            });
     }
 
     public void returnToOverview() {
@@ -182,10 +172,19 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             datePickerDialog.show();
         }
 
-        if (v == btnTimePicker) {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm", Locale.US);
-            Log.i("DetailviewActivity", "Conversion of txtDate Text is : " + txtDate.getEditableText().toString());
+        /*
+        if (v == btnDeleteTodo) {
+            final long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
+            crudOperations.deleteItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                @Override
+                public void onresult(Boolean result) {
+                    Toast.makeText(DetailviewActivity.this, "Item with id : " + String.valueOf(itemId) + " has been deleted", Toast.LENGTH_LONG).show();
+                }
+            });
+            Log.i("DetailviewActivity", "Item with id : " + String.valueOf(itemId) + " has been deleted");
+            returnToOverview();
         }
+        */
     }
 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

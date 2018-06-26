@@ -59,6 +59,12 @@ public class OverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
 
+        /*
+        long CrudToUse = getIntent().getLongExtra("CRUD_TO_USE", -1);
+        if (CrudToUse == 0) {
+
+        }
+        */
         this.crudOperations =  ((DataItemApplication)getApplication()).getCRUDOperations();
 
         listView = findViewById(R.id.listView);
@@ -101,7 +107,7 @@ public class OverviewActivity extends AppCompatActivity {
                         crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
                             @Override
                             public void onresult(Boolean result) {
-                                Toast.makeText(OverviewActivity.this,"Item with id " + item.getId() + " has been updates!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(OverviewActivity.this,"Item with id " + item.getId() + " updated", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -146,6 +152,21 @@ public class OverviewActivity extends AppCompatActivity {
 
     protected void updateItemInList(DataItem item) {
         Snackbar.make(findViewById(R.id.contentView),"received itemName from detailview: " + item.getName(),Snackbar.LENGTH_INDEFINITE).show();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ListView listView = findViewById(R.id.listView);
+                listView.setAdapter(listViewAdapter);
+                listViewAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    protected void deleteItemInList(final DataItem item) {
+        Snackbar.make(findViewById(R.id.contentView),"received itemId is deleted",Snackbar.LENGTH_INDEFINITE).show();
+        this.listViewAdapter.remove(item);
+        this.sortItems();
+        ((ListView)this.listView).setSelection(this.listViewAdapter.getPosition(item));
     }
 
     protected void showDetailviewForEdit(DataItem item) {
@@ -170,7 +191,13 @@ public class OverviewActivity extends AppCompatActivity {
                    @Override
                    public void onresult(DataItem result) {
                        if (requestCode == CALL_EDIT_ITEM) {
-                           updateItemInList(result);
+                           if (result == null) {
+                               Log.i("OverviewActivity", "deleteItemInList gets called.");
+                               deleteItemInList(result);
+                           } else {
+                               Log.i("OverviewActivity", "updateItemInList gets called.");
+                               updateItemInList(result);
+                           }
                        } else {
                            addItemToList(result);
                        }

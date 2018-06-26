@@ -33,7 +33,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="right|center"
-            android:hint="@string/hint_done"
             android:text="@string/is_done"
             android:textColor="@android:color/black"
             android:layoutDirection="rtl" />
@@ -66,10 +65,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/itemExpiryContainer"
+        android:hint="@string/itemExpiryLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionContainer">
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/itemExpiry"
+            android:maxLines="1"
+            android:text="@={item.description}"
+            android:inputType="text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.design.widget.TextInputLayout>
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionContainer">
+        app:layout_constraintTop_toBottomOf="@+id/itemExpiryContainer">
         <!-- https://www.journaldev.com/9976/android-date-time-picker-dialog -->
 
         <!-- EditText unit conversion test -->
@@ -95,21 +108,16 @@
         android:layout_toRightOf="@+id/in_date"
         android:layout_toEndOf="@+id/in_date" />
 
-    <EditText
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/in_time"
-        android:maxLines="1"
-        android:inputType="time"
-        android:layout_below="@+id/in_date"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
     <Button
+        android:id="@+id/btn_delete"
+        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Expiry time"
-        android:id="@+id/btn_time"
+        android:onClick="@{() -> actions.deleteItem()}"
+        android:text="@string/btn_delete"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:theme="@style/Delete.Button"
         android:layout_below="@+id/btn_date"
         android:layout_alignLeft="@+id/btn_date"
         android:layout_alignStart="@+id/btn_date" />

@@ -230,12 +230,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return ((email.contains("@")) && (email.contains(".de"))) ;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() == 6;
     }
 
@@ -399,6 +397,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+                            callOverviewIntent.putExtra("CRUD_TO_USE", 0);
                             startActivity(callOverviewIntent);
                         }
                     });
@@ -409,8 +408,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         public void onCancel(DialogInterface dialog) {
             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
+            callOverviewIntent.putExtra("CRUD_TO_USE", 0);
             startActivity(callOverviewIntent);
         }
     }
 }
-

@@ -93,6 +93,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
 
     @Override
     public boolean deleteItem(long id) {
-        return false;
+        db.delete(TABLE_DATAITEMS,"id=?", new String[]{String.valueOf(id)});
+        return true;
     }
 }
