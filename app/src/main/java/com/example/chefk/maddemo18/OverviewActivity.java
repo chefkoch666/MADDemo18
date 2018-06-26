@@ -1,5 +1,6 @@
 package com.example.chefk.maddemo18;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -7,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -34,6 +37,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+
+//public class OverviewActivity extends FragmentActivity implements NoticeDialogFragment.NoticeDialogListener{
 public class OverviewActivity extends AppCompatActivity {
 
     private IDataItemCRUDOperationsAsync crudOperations;
@@ -53,6 +58,7 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     private SortMode activeSortMode;
+    // private Boolean doDelete; // for testing NoticeDialogFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,10 +102,35 @@ public class OverviewActivity extends AppCompatActivity {
                 TextView itemIdText = itemView.findViewById(R.id.itemId);
                 itemIdText.setText(String.valueOf(item.getId()));
                 CheckBox itemDoneCheckbox = itemView.findViewById(R.id.itemDone);
+                CheckBox itemFavoriteCheckbox = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
+                ImageButton itemDeleteButton = itemView.findViewById(R.id.itemDeleteButton);
+
+                itemDeleteButton.setOnClickListener(null); // remove previous Listener
+                itemDeleteButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.i("OverviewAct-DeleteBtn", "DeleteButton was clicked.");
+                            deleteItemInList(item);
+                    }
+                });
+
+                itemFavoriteCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
+                itemFavoriteCheckbox.setChecked(item.isFavorite());
+                itemFavoriteCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        item.setFavorite(isChecked);
+                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                            @Override
+                            public void onresult(Boolean result) {
+                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
 
                 itemDoneCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
                 itemDoneCheckbox.setChecked(item.isDone());
-
                 itemDoneCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -162,11 +193,16 @@ public class OverviewActivity extends AppCompatActivity {
         });
     }
 
-    protected void deleteItemInList(final DataItem item) {
+    protected void deleteItemInList(DataItem item) {
         Snackbar.make(findViewById(R.id.contentView),"received itemId is deleted",Snackbar.LENGTH_INDEFINITE).show();
         this.listViewAdapter.remove(item);
         this.sortItems();
-        ((ListView)this.listView).setSelection(this.listViewAdapter.getPosition(item));
+        crudOperations.deleteItem(item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+            @Override
+            public void onresult(Boolean result) {
+
+            }
+        });
     }
 
     protected void showDetailviewForEdit(DataItem item) {
@@ -236,4 +272,28 @@ public class OverviewActivity extends AppCompatActivity {
             listViewAdapter.sort(DataItem.SORT_BY_NAME);
         }
     }
+
+    /* try to show a modal dialog when Delete action is clicked */
+    /*
+    public void showNoticeDialog() {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new NoticeDialogFragment();
+        dialog.show(getFragmentManager(), "NoticeDialogFragment");
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the NoticeDialogFragment.NoticeDialogListener interface
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        doDelete = true;
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+
+    }
+    */
 }

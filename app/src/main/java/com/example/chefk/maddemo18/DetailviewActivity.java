@@ -128,6 +128,40 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             });
     }
 
+    public void selectDate() {
+        int mYear, mMonth, mDay, mHour, mMinute;
+            // Get Current Date
+            final Calendar c = Calendar.getInstance();
+            mYear = c.get(Calendar.YEAR);
+            mMonth = c.get(Calendar.MONTH);
+            mDay = c.get(Calendar.DAY_OF_MONTH);
+            mHour = c.get(Calendar.HOUR_OF_DAY);
+            mMinute = c.get(Calendar.MINUTE);
+
+            // Launch Time Picker Dialog
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this,
+                    new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay,
+                                              int minute) {
+                            pickedDate = pickedDate + " "  + hourOfDay + ":" + minute;
+                            txtDate.setText(pickedDate);
+                        }
+                    }, mHour, mMinute, true);
+            timePickerDialog.show();
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                    new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year,
+                                              int monthOfYear, int dayOfMonth) {
+                            // is called first
+                            pickedDate = (dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+                        }
+                    }, mYear, mMonth, mDay);
+            datePickerDialog.show();
+    }
+
     public void returnToOverview() {
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ARG_ITEM_ID,this.item.getId());
@@ -171,20 +205,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                     }, mYear, mMonth, mDay);
             datePickerDialog.show();
         }
-
-        /*
-        if (v == btnDeleteTodo) {
-            final long itemId = getIntent().getLongExtra(ARG_ITEM_ID, -1);
-            crudOperations.deleteItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
-                @Override
-                public void onresult(Boolean result) {
-                    Toast.makeText(DetailviewActivity.this, "Item with id : " + String.valueOf(itemId) + " has been deleted", Toast.LENGTH_LONG).show();
-                }
-            });
-            Log.i("DetailviewActivity", "Item with id : " + String.valueOf(itemId) + " has been deleted");
-            returnToOverview();
-        }
-        */
     }
 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

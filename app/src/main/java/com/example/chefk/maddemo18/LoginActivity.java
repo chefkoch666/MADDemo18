@@ -362,7 +362,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 }
             }
 
-            // TODO: register the new account here.
             return true;
         }
 
@@ -397,7 +396,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-                            callOverviewIntent.putExtra("CRUD_TO_USE", 0);
+                            //callOverviewIntent.putExtra("CRUD_TO_USE", 0);
                             startActivity(callOverviewIntent);
                         }
                     });
@@ -408,7 +407,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         public void onCancel(DialogInterface dialog) {
             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-            callOverviewIntent.putExtra("CRUD_TO_USE", 0);
+            //callOverviewIntent.putExtra("CRUD_TO_USE", 0);
             startActivity(callOverviewIntent);
         }
     }

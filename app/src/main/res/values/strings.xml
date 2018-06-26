@@ -22,9 +22,13 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_warning_offline">I\'m offline :-( Continuing with local data only.</string>
     <string name="dialog_warning_delete">Are you sure?</string>
     <string name="btn_delete">DELETE</string>
+    <string name="expiryLabel">Set expiry</string>
+    <string name="icon_waste_paper_basket">Waste paper basket</string>
 </resources>
