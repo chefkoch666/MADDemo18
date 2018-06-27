@@ -2,6 +2,7 @@ package com.example.chefk.maddemo18;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -27,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,9 +40,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
+import com.example.chefk.maddemo18.model.User;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
+
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -65,6 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private User mAuthTaskUser = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -75,15 +88,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private ShowOfflineWarningDialogFragment showOfflineWarning = new ShowOfflineWarningDialogFragment();
     Button mEmailSignInButton;
 
+    @SuppressLint("StaticFieldLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = findViewById(R.id.email);
         populateAutoComplete();
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -96,7 +110,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton = findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setEnabled(false);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -108,6 +122,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
+        /*
+        // ohne Remote Webservice check
         if (hasNetworkConnectivity()) {
             Toast.makeText(LoginActivity.this, "Connected to a network", Toast.LENGTH_LONG).show();
         } else {
@@ -116,6 +132,48 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             //Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
             //startActivity(callOverviewIntent);
+        }
+        */
+
+        // mit remote webservice check
+        if (hasNetworkConnectivity()) { // check general network connectivity first, before trying to reach webservice
+            Toast.makeText(LoginActivity.this, "Connected to a network", Toast.LENGTH_SHORT).show();
+            new AsyncTask<Void, Void, String>() { // check if webservice is reachable on Thread
+                @Override
+                protected String doInBackground(Void... voids) {
+                    HttpURLConnection connection = null;
+                    try {
+                        URL url = new URL("http://134.245.70.212:8080");
+                        connection = (HttpURLConnection) url.openConnection();
+                        int code = connection.getResponseCode();
+                        String responseCodeAsString = "";
+                        if (code == 200) {
+                            responseCodeAsString = String.valueOf(code);
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Webservice unreachable", Toast.LENGTH_SHORT).show();
+                        }
+                        return responseCodeAsString;
+                    } catch (MalformedURLException e1) {
+                        e1.printStackTrace();
+                        return null;
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                        return null;
+                    } finally {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                    }
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    super.onPostExecute(s);
+                    Toast.makeText(LoginActivity.this, "Webservice reachable", Toast.LENGTH_SHORT).show();
+                }
+            }.execute();
+        } else { // we do not have any network connectivity, show warning and call next activity
+            showOfflineWarning.show(getFragmentManager(),"offline-warning");
         }
     }
 
@@ -224,8 +282,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            //mAuthTask = new UserLoginTask(email, password);
+            //mAuthTask = new UserLoginTask(email,password);
+            mAuthTaskUser = new User(email,password);
+            //mAuthTask.execute((Void) null);   // ist das die NULL Objekt Referenz?
+            mAuthTask.execute();                // geht es ohne?
         }
     }
 
@@ -245,7 +306,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -265,13 +325,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
                 }
             });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
-    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -346,7 +400,36 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
+            // Versuch gegen webservice zu authentifizieren
+            Boolean resultAuth = false;
+            try {
+                // Simulate network access.
+                //Thread.sleep(2000);
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("http://134.245.70.212:8080")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                Log.i("LoginAct-inside-try", "Bevor serviceProxy");
+                final RemoteDataItemCRUDOperationsImpl.TodoWebAPI serviceProxy = retrofit.create(RemoteDataItemCRUDOperationsImpl.TodoWebAPI.class);
+                //return serviceProxy.authenticateUser(mAuthTaskUser).execute().body();
+                resultAuth = serviceProxy.authenticateUser(mAuthTaskUser).execute().body();
+            } catch (IOException e2) {
+                return false;
+            }
+            return resultAuth; //  TODO bekommt success jetzt den Wert?
+            /*
+            for (String credential : DUMMY_CREDENTIALS) {
+                String[] pieces = credential.split(":");
+                if (pieces[0].equals(mEmail)) {
+                    // Account exists, return true if the password matches.
+                    return pieces[1].equals(mPassword);
+                }
+            }
 
+            return true;
+            */
+
+            /*
             try {
                 // Simulate network access.
                 Thread.sleep(2000);
@@ -363,6 +446,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
 
             return true;
+            */
         }
 
         @Override

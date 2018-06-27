@@ -51,4 +51,9 @@ public class SimpleDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     public boolean deleteItem(long id) {
         return false;
     }
+
+    @Override
+    public boolean authenticateUser(User user) {
+        return true;
+    }
 }

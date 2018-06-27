@@ -33,6 +33,9 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
         @DELETE("/api/todos/{id}")
         public Call<Boolean> deleteItem(@Path("id") long id);
+
+        @POST("/api/users/auth")
+        public Call<Boolean> authenticateUser(@Body User user);
     }
 
     private TodoWebAPI serviceProxy;
@@ -99,6 +102,18 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         } catch (IOException e) {
             throw new RuntimeException(e);
             //e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean authenticateUser(User user) {
+        try {
+            return serviceProxy.authenticateUser(user).execute().body() != null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+            //e.printStackTrace();
+        } catch (NullPointerException e2) {
+            throw new RuntimeException(e2);
         }
     }
 }

@@ -96,4 +96,9 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         db.delete(TABLE_DATAITEMS,"id=?", new String[]{String.valueOf(id)});
         return true;
     }
+
+    @Override
+    public boolean authenticateUser(User user) {
+        return true;
+    }
 }

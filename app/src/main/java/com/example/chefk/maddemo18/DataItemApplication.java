@@ -11,6 +11,7 @@ import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.model.LocalDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.SimpleDataItemCRUDOperationsImpl;
+import com.example.chefk.maddemo18.model.User;
 
 import java.util.List;
 
@@ -104,6 +105,22 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
             @Override
             protected Boolean doInBackground(Long... longs) {
                 return crudOperations.deleteItem(id);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                onresult.onresult(aBoolean);
+            }
+        }.execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public void authenticateUser(final User user, final ResultCallback<Boolean> onresult) {
+        new AsyncTask<User,Void,Boolean>() {
+            @Override
+            protected Boolean doInBackground(User... users) {
+                return crudOperations.authenticateUser(user);
             }
 
             @Override
