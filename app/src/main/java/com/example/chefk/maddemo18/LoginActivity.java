@@ -101,6 +101,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (textView.getText().toString().length() > 0) {
+                    mEmailSignInButton.setEnabled(true);
+                }
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
                     mEmailSignInButton.setEnabled(true);
                     attemptLogin();
@@ -143,7 +146,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 protected String doInBackground(Void... voids) {
                     HttpURLConnection connection = null;
                     try {
-                        URL url = new URL("http://134.245.70.212:8080");
+                        //URL url = new URL("http://134.245.70.212:8080");
+                        URL url = new URL("http://172.16.42.58:8080");
                         connection = (HttpURLConnection) url.openConnection();
                         int code = connection.getResponseCode();
                         String responseCodeAsString = "";
@@ -283,7 +287,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // perform the user login attempt.
             showProgress(true);
             //mAuthTask = new UserLoginTask(email, password);
-            //mAuthTask = new UserLoginTask(email,password);
+            mAuthTask = new UserLoginTask(email,password);
             mAuthTaskUser = new User(email,password);
             //mAuthTask.execute((Void) null);   // ist das die NULL Objekt Referenz?
             mAuthTask.execute();                // geht es ohne?
@@ -387,7 +391,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<User, Void, Boolean> {
 
         private final String mEmail;
         private final String mPassword;
@@ -398,21 +402,23 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Boolean doInBackground(User... params) {
             // TODO: attempt authentication against a network service.
             // Versuch gegen webservice zu authentifizieren
             Boolean resultAuth = false;
-            try {
-                // Simulate network access.
-                //Thread.sleep(2000);
+            try { // try threaded webservice access
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("http://134.245.70.212:8080")
+                        //.baseUrl("http://134.245.70.212:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
+                        .baseUrl("http://172.16.42.58:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
+                        //.baseUrl("http://10.0.2.2:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 Log.i("LoginAct-inside-try", "Bevor serviceProxy");
                 final RemoteDataItemCRUDOperationsImpl.TodoWebAPI serviceProxy = retrofit.create(RemoteDataItemCRUDOperationsImpl.TodoWebAPI.class);
-                //return serviceProxy.authenticateUser(mAuthTaskUser).execute().body();
+                Log.i("LoginAct-inside-try", "Value of resultAuth is: " + String.valueOf(serviceProxy.authenticateUser(mAuthTaskUser).execute().code()));
                 resultAuth = serviceProxy.authenticateUser(mAuthTaskUser).execute().body();
+                //resultAuth = serviceProxy.authenticateUser(params[0]).execute().body();
+                //Log.i("LoginAct-inside-try", "Value of resultAuth is: " + Boolean.toString(resultAuth));
             } catch (IOException e2) {
                 return false;
             }

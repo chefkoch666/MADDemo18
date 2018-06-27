@@ -34,7 +34,7 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         @DELETE("/api/todos/{id}")
         public Call<Boolean> deleteItem(@Path("id") long id);
 
-        @POST("/api/users/auth")
+        @PUT("/api/users/auth")
         public Call<Boolean> authenticateUser(@Body User user);
     }
 
@@ -42,7 +42,9 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     public RemoteDataItemCRUDOperationsImpl() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:8080")
+                //.baseUrl("http://10.0.2.2:8080") // also change in LoginActivity.java
+                .baseUrl("http://172.16.42.58:8080") // also change in LoginActivity.java
+                //.baseUrl("http://134.245.70.212:8080") // also change in LoginActivity.java
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
