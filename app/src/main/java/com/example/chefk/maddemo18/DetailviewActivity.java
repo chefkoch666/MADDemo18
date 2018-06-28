@@ -1,18 +1,13 @@
 package com.example.chefk.maddemo18;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -28,7 +23,7 @@ import com.example.chefk.maddemo18.view.DetailviewActions;
 
 import java.util.Calendar;
 
-public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, /*View.OnClickListener,*/ CompoundButton.OnCheckedChangeListener {
 
     private IDataItemCRUDOperationsAsync crudOperations;
 
@@ -48,11 +43,11 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         final ActivityDetailviewBinding bindingMediator =  DataBindingUtil.setContentView(this, R.layout.activity_detailview);
 
         // date / time picker (https://www.journaldev.com/9976/android-date-time-picker-dialog)
-        btnDatePicker = findViewById(R.id.btn_date);
+        //btnDatePicker = findViewById(R.id.btn_date);
         btnDeleteTodo = findViewById(R.id.btn_delete);
         txtDate = findViewById(R.id.in_date);
-        btnDatePicker.setOnClickListener(this);
-        btnDeleteTodo.setOnClickListener(this);
+        //btnDatePicker.setOnClickListener(this); // TODO check if working with databinding
+        //btnDeleteTodo.setOnClickListener(this); // TODO check if working with databinding
         itemDoneCheckbox = findViewById(R.id.itemDoneCheckbox);
         itemFavoriteCheckbox = findViewById(R.id.itemFavoriteCheckBox);
 
@@ -170,6 +165,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         finish();
     }
 
+    // TODO probably not using this function anymore due to databinding
+    /*
     @Override
     public void onClick(View v) { // https://www.journaldev.com/9976/android-date-time-picker-dialog
         int mYear, mMonth, mDay, mHour, mMinute;
@@ -206,6 +203,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             datePickerDialog.show();
         }
     }
+    */
 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView == itemFavoriteCheckbox) {

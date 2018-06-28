@@ -3,14 +3,11 @@ package com.example.chefk.maddemo18;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 
 import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.model.LocalDataItemCRUDOperations;
-import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
-import com.example.chefk.maddemo18.model.SimpleDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.User;
 
 import java.util.List;

@@ -24,18 +24,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="end|center"
+            android:layoutDirection="rtl"
             style="?android:attr/starStyle"
-            android:text="@string/favoriteLabel"
-            android:layoutDirection="rtl" />
+            android:text="@string/favoriteLabel" />
         <CheckBox
             android:id="@+id/itemDoneCheckbox"
             android:focusable="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end|center"
+            android:layoutDirection="rtl"
             android:text="@string/is_done"
-            android:textColor="@android:color/black"
-            android:layoutDirection="rtl" />
+            android:textColor="@android:color/black" />
     </LinearLayout>
     <android.support.design.widget.TextInputLayout
         android:id="@+id/itemNameContainer"
@@ -65,45 +65,44 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </android.support.design.widget.TextInputLayout>
+    <android.support.design.widget.TextInputLayout
+            android:id="@+id/itemExpiryContainer"
+            android:hint="@string/itemExpiryLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionContainer">
+        <!-- https://www.journaldev.com/9976/android-date-time-picker-dialog -->
+        <!-- EditText unit conversion test -->
+        <!-- android:text="@={item.expiry}" -->
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/in_date"
+            android:focusable="false"
+            android:maxLines="1"
+            android:inputType="none"
+            android:layout_marginTop="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:onClick="@{() -> actions.selectDate()}"
+            app:realValue="@={item.expiry}" />
+    </android.support.design.widget.TextInputLayout>
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/itemDescriptionContainer">
-        <!-- https://www.journaldev.com/9976/android-date-time-picker-dialog -->
-
-        <!-- EditText unit conversion test -->
-        <!-- android:text="@={item.expiry}" -->
-    <EditText
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/in_date"
-        android:maxLines="1"
-        android:inputType="datetime"
-        android:layout_marginTop="10dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        app:realValue="@={item.expiry}" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/expiryLabel"
-        android:id="@+id/btn_date"
-        android:layout_alignBottom="@+id/in_date"
-        android:layout_toEndOf="@+id/in_date" />
-
-    <Button
-        android:id="@+id/btn_delete"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="@{() -> actions.deleteItem()}"
-        android:text="@string/btn_delete"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:theme="@style/Delete.Button"
-        android:layout_below="@+id/btn_date"
-        android:layout_alignStart="@+id/btn_date" />
+        app:layout_constraintTop_toBottomOf="@+id/itemExpiryContainer">
+        <Button
+            android:id="@+id/btn_delete"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> actions.deleteItem()}"
+            android:text="@string/btn_delete"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:theme="@style/Delete.Button"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/saveItem"

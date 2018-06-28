@@ -35,9 +35,14 @@ public class binderDatePicker {
     }
 
     @BindingAdapter("realValue")
-    public static void setRealValue(EditText view, long value) {
-            String dateString = new SimpleDateFormat("dd/MM/yyyy hh:mm").format(new Date(value));
+    public static void setRealValue(EditText view, long value) { // TODO add Locale.US to SMF, then check in all Views if it works correctly
+        if (value == 0 || value == 1) {
+            view.setText(null);
+            view.setHint("Expiry");
+        } else {
+            String dateString = new SimpleDateFormat("dd/MM/yyyy hh:mm", Locale.US).format(new Date(value));
             view.setText(dateString);
+        }
     }
 
     @InverseBindingAdapter(attribute = "realValue")

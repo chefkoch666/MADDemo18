@@ -1,16 +1,14 @@
 package com.example.chefk.maddemo18;
 
-import android.app.DialogFragment;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.provider.ContactsContract;
+import android.graphics.Color;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,15 +25,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.chefk.maddemo18.model.DataItem;
-import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 
-import org.w3c.dom.Text;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 //public class OverviewActivity extends FragmentActivity implements NoticeDialogFragment.NoticeDialogListener{
@@ -58,7 +55,6 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     private SortMode activeSortMode;
-    // private Boolean doDelete; // for testing NoticeDialogFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +100,22 @@ public class OverviewActivity extends AppCompatActivity {
                 CheckBox itemDoneCheckbox = itemView.findViewById(R.id.itemDone);
                 CheckBox itemFavoriteCheckbox = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
                 ImageButton itemDeleteButton = itemView.findViewById(R.id.itemDeleteButton);
+                TextView itemExpiryText = itemView.findViewById(R.id.itemExpiryTV);
+                String shortExpiryDateAsString = new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(item.getExpiry()));
+
+                if (item.getExpiry() == 0 || item.getExpiry() == 1) { // set design dependant on expiry status
+                    Log.i("Overview-Expiry", "0 or 1 : Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
+                    itemExpiryText.setText(R.string.expire_none);
+                } else {
+                    if ((item.getExpiry() > 1) && (item.getExpiry() < new Date().getTime())) { // task is overdue -> emphasize and set text
+                        Log.i("Overview-Expiry", ">1 und overdue Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
+                        itemExpiryText.setTextColor(Color.RED);
+                        itemExpiryText.setText(shortExpiryDateAsString);
+                    } else { // task not expired, set normal text
+                        Log.i("Overview-Expiry", "task not expired Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
+                        itemExpiryText.setText(shortExpiryDateAsString);
+                    }
+                }
 
                 itemDeleteButton.setOnClickListener(null); // remove previous Listener
                 itemDeleteButton.setOnClickListener(new View.OnClickListener() {
@@ -229,7 +241,7 @@ public class OverviewActivity extends AppCompatActivity {
                        if (requestCode == CALL_EDIT_ITEM) {
                            if (result == null) {
                                Log.i("OverviewActivity", "deleteItemInList gets called.");
-                               deleteItemInList(result);
+                               //deleteItemInList(result); // has been deleted already via CRUD in Detailview
                            } else {
                                Log.i("OverviewActivity", "updateItemInList gets called.");
                                updateItemInList(result);
@@ -272,28 +284,4 @@ public class OverviewActivity extends AppCompatActivity {
             listViewAdapter.sort(DataItem.SORT_BY_NAME);
         }
     }
-
-    /* try to show a modal dialog when Delete action is clicked */
-    /*
-    public void showNoticeDialog() {
-        // Create an instance of the dialog fragment and show it
-        DialogFragment dialog = new NoticeDialogFragment();
-        dialog.show(getFragmentManager(), "NoticeDialogFragment");
-    }
-
-    // The dialog fragment receives a reference to this Activity through the
-    // Fragment.onAttach() callback, which it uses to call the following methods
-    // defined by the NoticeDialogFragment.NoticeDialogListener interface
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        // User touched the dialog's positive button
-        doDelete = true;
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-        // User touched the dialog's negative button
-
-    }
-    */
 }

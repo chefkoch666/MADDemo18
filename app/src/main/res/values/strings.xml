@@ -4,7 +4,7 @@
     <string name="popup_message">Selected: %s</string>
     <string name="itemNameLabel">Name</string>
     <string name="itemDescriptionLabel">Description</string>
-    <string name="itemExpiryLabel">Expiry DateTime</string>
+    <string name="itemExpiryLabel">Expiry</string>
     <string name="itemSaveButton">Save</string>
     <string name="is_done">Is this ToDo done?</string>
     <string name="favoriteLabel">Favorite</string>
@@ -26,9 +26,10 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="dialog_warning_offline">I\'m offline :-( Continuing with local data only.</string>
+    <string name="dialog_warning_offline">I\'m offline :-( Starting with local data.</string>
     <string name="dialog_warning_delete">Are you sure?</string>
     <string name="btn_delete">DELETE</string>
     <string name="expiryLabel">Set expiry</string>
     <string name="icon_waste_paper_basket">Waste paper basket</string>
+    <string name="expire_none">none</string>
 </resources>

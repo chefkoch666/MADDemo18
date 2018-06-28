@@ -15,7 +15,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
     private static final String TABLE_DATAITEMS = "DATAITEMS";
     private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE", "FAVORITE"};
 
-    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER,DONE INTEGER,FAVORITE INTEGER)";
+    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER DEFAULT 0,DONE INTEGER,FAVORITE INTEGER)";
 
     public LocalDataItemCRUDOperations(Context ctx) {
         this.db = ctx.openOrCreateDatabase("mysqlitedb.sqlite",Context.MODE_PRIVATE,null);

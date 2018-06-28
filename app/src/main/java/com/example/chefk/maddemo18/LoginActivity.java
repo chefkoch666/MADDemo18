@@ -7,27 +7,27 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -42,6 +42,7 @@ import android.widget.Toast;
 
 import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.User;
+import com.example.chefk.maddemo18.model.WebserviceURL;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -49,7 +50,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -61,6 +61,10 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
+    //private static final String webserviceURLString = "http://172.16.42.58:8080"; // Home
+    //private static final String webserviceURLString = "http://134.245.70.212:8080"; // Office
+    //private static final String webserviceURLString = "http://172.16.42.58:8080"; // Laptop
+    private static final WebserviceURL webserviceURLString = new WebserviceURL(); // see/change value in model WebserviceURL.java
     /**
      * Id to identity READ_CONTACTS permission request.
      */
@@ -68,7 +72,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     /**
      * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
      */
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "s@bht.de:000000", "bar@example.com:world"
@@ -86,7 +89,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mLoginFormView;
 
     private ShowOfflineWarningDialogFragment showOfflineWarning = new ShowOfflineWarningDialogFragment();
-    Button mEmailSignInButton;
+    Button mLoginButton;
 
     @SuppressLint("StaticFieldLeak")
     @Override
@@ -101,21 +104,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (textView.getText().toString().length() > 0) {
-                    mEmailSignInButton.setEnabled(true);
-                }
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    mEmailSignInButton.setEnabled(true);
+                    mLoginButton.setEnabled(true);
                     attemptLogin();
                     return true;
                 }
                 return false;
             }
         });
+        mPasswordView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
-        mEmailSignInButton = findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setEnabled(false);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(s.toString().trim().length()>5){
+                    mLoginButton.setEnabled(true);
+                } else {
+                    mLoginButton.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
+        mLoginButton = findViewById(R.id.email_sign_in_button);
+        mLoginButton.setEnabled(false);
+        mLoginButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -125,36 +141,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        /*
-        // ohne Remote Webservice check
-        if (hasNetworkConnectivity()) {
-            Toast.makeText(LoginActivity.this, "Connected to a network", Toast.LENGTH_LONG).show();
-        } else {
-            //Toast.makeText(LoginActivity.this, "I am offline :-(", Toast.LENGTH_LONG).show();
-            showOfflineWarning.show(getFragmentManager(),"offline-warning");
-
-            //Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-            //startActivity(callOverviewIntent);
-        }
-        */
-
-        // mit remote webservice check
         if (hasNetworkConnectivity()) { // check general network connectivity first, before trying to reach webservice
-            Toast.makeText(LoginActivity.this, "Connected to a network", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "OK - general network connectivity", Toast.LENGTH_SHORT).show();
             new AsyncTask<Void, Void, String>() { // check if webservice is reachable on Thread
                 @Override
                 protected String doInBackground(Void... voids) {
                     HttpURLConnection connection = null;
                     try {
-                        //URL url = new URL("http://134.245.70.212:8080");
-                        URL url = new URL("http://172.16.42.58:8080");
+                        URL url = new URL(webserviceURLString.getUrl()); // see very top // TODO maybe simple class in model for all Activities?
                         connection = (HttpURLConnection) url.openConnection();
+                        connection.setConnectTimeout(1000);
+                        connection.setReadTimeout(1000);
                         int code = connection.getResponseCode();
                         String responseCodeAsString = "";
                         if (code == 200) {
                             responseCodeAsString = String.valueOf(code);
                         } else {
                             Toast.makeText(LoginActivity.this, "Webservice unreachable", Toast.LENGTH_SHORT).show();
+                            showOfflineWarning.show(getFragmentManager(),"offline-warning");
                         }
                         return responseCodeAsString;
                     } catch (MalformedURLException e1) {
@@ -170,13 +174,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     }
                 }
 
+                /*
                 @Override
                 protected void onPostExecute(String s) {
                     super.onPostExecute(s);
                     Toast.makeText(LoginActivity.this, "Webservice reachable", Toast.LENGTH_SHORT).show();
                 }
+                */
             }.execute();
-        } else { // we do not have any network connectivity, show warning and call next activity
+        } else { // we do not have network connectivity at all, show warning and call next activity
             showOfflineWarning.show(getFragmentManager(),"offline-warning");
         }
     }
