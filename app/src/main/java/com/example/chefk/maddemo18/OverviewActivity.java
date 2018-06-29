@@ -51,7 +51,7 @@ public class OverviewActivity extends AppCompatActivity {
     private static final int CALL_CREATE_ITEM = 1;
 
     public enum SortMode {
-        SORT_BY_ID, SORT_BY_NAME;
+        SORT_BY_ID, SORT_BY_NAME, SORT_BY_FAVORITE, SORT_BY_DATE, SORT_BY_DONE
     }
 
     private SortMode activeSortMode;
@@ -73,7 +73,8 @@ public class OverviewActivity extends AppCompatActivity {
         createItemButton = findViewById(R.id.createItem);
         progress = findViewById(R.id.progressBar);
 
-        this.activeSortMode = SortMode.SORT_BY_ID;
+        //this.activeSortMode = SortMode.SORT_BY_ID;
+        this.activeSortMode = SortMode.SORT_BY_DONE;
 
         listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem, itemsList){
             @NonNull
@@ -265,23 +266,49 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.sortItems) {
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        int menuItemId = menuItem.getItemId();
+        if (menuItemId == R.id.sortItemsByDate) {
+            this.activeSortMode = SortMode.SORT_BY_DATE;
+        }
+        if (menuItemId == R.id.sortItemsByFavorite) {
+            this.activeSortMode = SortMode.SORT_BY_FAVORITE;
+        }
+        if (menuItemId == R.id.sortItemsByDone) {
+            this.activeSortMode = SortMode.SORT_BY_DONE;
+        }
+        this.sortItems();
+        return true;
+        /*
+        if (menuItem.getItemId() == R.id.sortItems) {
             this.activeSortMode = (this.activeSortMode == SortMode.SORT_BY_ID ? SortMode.SORT_BY_NAME : SortMode.SORT_BY_ID);
             this.sortItems();
             return true;
         } else {
-            return super.onOptionsItemSelected(item);
+            return super.onOptionsItemSelected(menuItem);
         }
+        */
     }
 
     private void sortItems() {
         Log.i("OverviewActivity","sortItems(): " + this.itemsList);
+        switch (this.activeSortMode) { // TODO test if it replaces the if-else below
+            case SORT_BY_ID:
+                listViewAdapter.sort(DataItem.SORT_BY_ID);
+                break;
+            case SORT_BY_NAME: listViewAdapter.sort(DataItem.SORT_BY_NAME); break;
+            case SORT_BY_DONE: listViewAdapter.sort(DataItem.SORT_BY_DONE); break;
+            case SORT_BY_DATE: listViewAdapter.sort(DataItem.SORT_BY_DATE); /* listViewAdapter.sort(DataItem.SORT_BY_DONE); */ break;
+            case SORT_BY_FAVORITE: listViewAdapter.sort(DataItem.SORT_BY_FAVORITE); break;
+            default: break;
+        }
+
+        /*
         if (this.activeSortMode == SortMode.SORT_BY_ID) {
             listViewAdapter.sort(DataItem.SORT_BY_ID);
-        }
-        else {
+        } else {
             listViewAdapter.sort(DataItem.SORT_BY_NAME);
         }
+        */
     }
 }

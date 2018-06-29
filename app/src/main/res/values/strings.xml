@@ -32,4 +32,7 @@
     <string name="expiryLabel">Set expiry</string>
     <string name="icon_waste_paper_basket">Waste paper basket</string>
     <string name="expire_none">none</string>
+    <string name="sort_menu_by_date_title">Sort by Date</string>
+    <string name="sort_menu_by_favorite_title">Sort by Favorite</string>
+    <string name="sort_menu_by_done_title">Sort by Done</string>
 </resources>

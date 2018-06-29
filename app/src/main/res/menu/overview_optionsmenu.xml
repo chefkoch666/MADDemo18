@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:title="SORT" android:icon="@drawable/ic_sort_variant_white_24dp" android:id="@+id/sortItems" app:showAsAction="always" />
+    <!--
+    <item
+        android:id="@+id/sortItems"
+        android:title="@string/sort_menu_title"
+        android:icon="@drawable/ic_sort_variant_white_24dp"
+        app:showAsAction="always" />
+    -->
+    <item
+        android:id="@+id/sortItemsByDate"
+        android:title="@string/sort_menu_by_date_title" />
+    <item
+        android:id="@+id/sortItemsByFavorite"
+        android:title="@string/sort_menu_by_favorite_title" />
+    <item
+        android:id="@+id/sortItemsByDone"
+        android:title="@string/sort_menu_by_done_title" />
 </menu>
