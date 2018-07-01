@@ -135,8 +135,8 @@ public class DataItem implements Serializable {
     public static Comparator<DataItem> SORT_BY_FAVORITE = new Comparator<DataItem>() { // had to increase API level from 17 to 19
         @Override
         public int compare(DataItem item1, DataItem item2) {
-            boolean b1 = item1.isDone();
-            boolean b2 = item2.isDone();
+            boolean b1 = item1.isFavorite();
+            boolean b2 = item2.isFavorite();
             //return Boolean.compare(b1, b2); // Call requires API level 19 (current min is 17): java.lang.Boolean#compare
             return -1 * Boolean.compare(b1, b2); // reverseOrder, Call requires API level 19 (current min is 17): java.lang.Boolean#compare
         }

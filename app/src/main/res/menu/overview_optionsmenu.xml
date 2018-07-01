@@ -18,4 +18,7 @@
     <item
         android:id="@+id/sortItemsByDone"
         android:title="@string/sort_menu_by_done_title" />
+    <item
+        android:id="@+id/sortItemsByName"
+        android:title="@string/sort_menu_by_name_title" />
 </menu>

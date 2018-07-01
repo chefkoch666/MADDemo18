@@ -74,7 +74,7 @@ public class OverviewActivity extends AppCompatActivity {
             public View getView(int position, @Nullable View existingView, @NonNull ViewGroup parent) {
 
                 // obtain the data
-                final DataItem item = this.getItem(position);
+                DataItem item = this.getItem(position);
 
                 ListitemViewHolder viewHolder;
 
@@ -83,13 +83,7 @@ public class OverviewActivity extends AppCompatActivity {
                 if (itemView == null) {
                     Log.i("OverviewActivity", "create new view for position " + position);
                     itemView = getLayoutInflater().inflate(R.layout.activity_overview_listitem, null);
-                    viewHolder = new ListitemViewHolder();
-                    viewHolder.itemName = itemView.findViewById(R.id.itemName);
-                    viewHolder.itemId = itemView.findViewById(R.id.itemId);
-                    viewHolder.itemDone = itemView.findViewById(R.id.itemDone);
-                    viewHolder.itemFavorite = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
-                    viewHolder.itemDelete = itemView.findViewById(R.id.itemDeleteButton);
-                    viewHolder.itemExpiry = itemView.findViewById(R.id.itemExpiryTV);
+                    viewHolder = new ListitemViewHolder((ViewGroup)itemView);
                     itemView.setTag(viewHolder);
                 } else {
                     Log.i("OverviewActivity", "recycling existing view for position " + position);
@@ -97,12 +91,15 @@ public class OverviewActivity extends AppCompatActivity {
                 }
 
                 // bind the data to the view
-                viewHolder.itemName.setText(item.getName());
-                viewHolder.itemId.setText(String.valueOf(item.getId()));
+                viewHolder.unbind();
+                viewHolder.bind(item);
+
                 String shortExpiryDateAsString = new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(item.getExpiry()));
 
-                if (item.getExpiry() == 0 || item.getExpiry() == 1) { // set design dependant on expiry status
+                // set design dependant on expiry status
+                if (item.getExpiry() == 0 || item.getExpiry() == 1) { // item has no expiry -> set "none" as placeholder
                     Log.i("Overview-Expiry", "0 or 1 : Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
+                    viewHolder.itemExpiry.setTextColor(Color.DKGRAY);
                     viewHolder.itemExpiry.setText(R.string.expire_none);
                 } else {
                     if ((item.getExpiry() > 1) && (item.getExpiry() < new Date().getTime())) { // task is overdue -> emphasize and set text
@@ -111,48 +108,10 @@ public class OverviewActivity extends AppCompatActivity {
                         viewHolder.itemExpiry.setText(shortExpiryDateAsString);
                     } else { // task not expired, set normal text
                         Log.i("Overview-Expiry", "task not expired Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
+                        viewHolder.itemExpiry.setTextColor(Color.DKGRAY);
                         viewHolder.itemExpiry.setText(shortExpiryDateAsString);
                     }
                 }
-
-                viewHolder.itemDelete.setOnClickListener(null); // remove previous Listener
-                viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.i("OverviewAct-DeleteBtn", "DeleteButton was clicked.");
-                            deleteItemInList(item);
-                    }
-                });
-
-                viewHolder.itemFavorite.setOnCheckedChangeListener(null); // remove previous Listener
-                viewHolder.itemFavorite.setChecked(item.isFavorite());
-                viewHolder.itemFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        item.setFavorite(isChecked);
-                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
-                            @Override
-                            public void onresult(Boolean result) {
-                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
-
-                viewHolder.itemDone.setOnCheckedChangeListener(null); // remove previous Listener
-                viewHolder.itemDone.setChecked(item.isDone());
-                viewHolder.itemDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        item.setDone(isChecked);
-                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
-                            @Override
-                            public void onresult(Boolean result) {
-                                Toast.makeText(OverviewActivity.this,"Item with id " + item.getId() + " updated", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
 
                 return itemView;
             }
@@ -283,6 +242,9 @@ public class OverviewActivity extends AppCompatActivity {
         if (menuItemId == R.id.sortItemsByDone) {
             this.activeSortMode = SortMode.SORT_BY_DONE;
         }
+        if (menuItemId == R.id.sortItemsByName) {
+            this.activeSortMode = SortMode.SORT_BY_NAME;
+        }
 
         this.sortItems();
         return true;
@@ -290,10 +252,8 @@ public class OverviewActivity extends AppCompatActivity {
 
     private void sortItems() {
         Log.i("OverviewActivity","sortItems(): " + this.itemsList);
-        switch (this.activeSortMode) { // TODO test if it replaces the if-else below
-            case SORT_BY_ID:
-                listViewAdapter.sort(DataItem.SORT_BY_ID);
-                break;
+        switch (this.activeSortMode) {
+            case SORT_BY_ID: listViewAdapter.sort(DataItem.SORT_BY_ID); break;
             case SORT_BY_NAME: listViewAdapter.sort(DataItem.SORT_BY_NAME); break;
             case SORT_BY_DONE: listViewAdapter.sort(DataItem.SORT_BY_DONE); break;
             case SORT_BY_DATE: listViewAdapter.sort(DataItem.SORT_BY_DATE); /* listViewAdapter.sort(DataItem.SORT_BY_DONE); */ break;
@@ -306,11 +266,70 @@ public class OverviewActivity extends AppCompatActivity {
 
         private DataItem item; // stretching the ViewHolder pattern
 
-        public TextView itemName;
-        public TextView itemId;
-        public CheckBox itemDone;
-        public CheckBox itemFavorite;
-        public ImageButton itemDelete;
-        public TextView itemExpiry;
-    }
+        private TextView itemName;
+        private TextView itemId;
+        private CheckBox itemDone;
+        private CheckBox itemFavorite;
+        private ImageButton itemDelete;
+        private TextView itemExpiry;
+
+        public ListitemViewHolder(ViewGroup itemView) {
+            this.itemName = itemView.findViewById(R.id.itemName);
+            this.itemId = itemView.findViewById(R.id.itemId);
+            this.itemDone = itemView.findViewById(R.id.itemDone);
+            this.itemFavorite = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
+            this.itemDelete = itemView.findViewById(R.id.itemDeleteButton);
+            this.itemExpiry = itemView.findViewById(R.id.itemExpiryTV);
+
+            this.itemDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (item != null) {
+                        item.setDone(isChecked);
+                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                            @Override
+                            public void onresult(Boolean result) {
+                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " updated", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            });
+
+            this.itemFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (item != null) {
+                        item.setFavorite(isChecked);
+                        crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                            @Override
+                            public void onresult(Boolean result) {
+                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            });
+
+            this.itemDelete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i("OverviewAct-DeleteBtn", "DeleteButton was clicked.");
+                    deleteItemInList(item);
+                }
+            });
+        } // end public ListitemViewHolder(ViewGroup itemView)
+
+            public void unbind() {
+                this.item = null;
+            }
+
+            public void bind(DataItem item) {
+                this.item = item;
+                this.itemName.setText(item.getName());
+                this.itemId.setText(String.valueOf(item.getId()));
+                this.itemDone.setChecked(item.isDone());
+                this.itemFavorite.setChecked(item.isFavorite());
+            }
+        } // end inner non-static public class ListitemViewHolder
 }

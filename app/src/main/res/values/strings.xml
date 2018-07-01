@@ -36,4 +36,5 @@
     <string name="sort_menu_by_favorite_title">Sort by Favorite</string>
     <string name="sort_menu_by_done_title">Sort by Done</string>
     <string name="add_contacts_menu_title">Add Contacts</string>
+    <string name="sort_menu_by_name_title">Sort by Name</string>
 </resources>
