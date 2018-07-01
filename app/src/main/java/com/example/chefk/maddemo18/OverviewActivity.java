@@ -60,21 +60,13 @@ public class OverviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
-
-        /*
-        long CrudToUse = getIntent().getLongExtra("CRUD_TO_USE", -1);
-        if (CrudToUse == 0) {
-
-        }
-        */
         this.crudOperations =  ((DataItemApplication)getApplication()).getCRUDOperations();
 
         listView = findViewById(R.id.listView);
         createItemButton = findViewById(R.id.createItem);
         progress = findViewById(R.id.progressBar);
 
-        //this.activeSortMode = SortMode.SORT_BY_ID;
-        this.activeSortMode = SortMode.SORT_BY_DONE;
+        this.activeSortMode = SortMode.SORT_BY_DONE; //this.activeSortMode = SortMode.SORT_BY_ID;
 
         listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem, itemsList){
             @NonNull
@@ -84,42 +76,47 @@ public class OverviewActivity extends AppCompatActivity {
                 // obtain the data
                 final DataItem item = this.getItem(position);
 
+                ListitemViewHolder viewHolder;
+
                 // obtain the view
                 View itemView = existingView;
                 if (itemView == null) {
                     Log.i("OverviewActivity", "create new view for position " + position);
                     itemView = getLayoutInflater().inflate(R.layout.activity_overview_listitem, null);
+                    viewHolder = new ListitemViewHolder();
+                    viewHolder.itemName = itemView.findViewById(R.id.itemName);
+                    viewHolder.itemId = itemView.findViewById(R.id.itemId);
+                    viewHolder.itemDone = itemView.findViewById(R.id.itemDone);
+                    viewHolder.itemFavorite = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
+                    viewHolder.itemDelete = itemView.findViewById(R.id.itemDeleteButton);
+                    viewHolder.itemExpiry = itemView.findViewById(R.id.itemExpiryTV);
+                    itemView.setTag(viewHolder);
                 } else {
                     Log.i("OverviewActivity", "recycling existing view for position " + position);
+                    viewHolder = (ListitemViewHolder)itemView.getTag();
                 }
 
                 // bind the data to the view
-                TextView itemNameText = itemView.findViewById(R.id.itemName);
-                itemNameText.setText(item.getName());
-                TextView itemIdText = itemView.findViewById(R.id.itemId);
-                itemIdText.setText(String.valueOf(item.getId()));
-                CheckBox itemDoneCheckbox = itemView.findViewById(R.id.itemDone);
-                CheckBox itemFavoriteCheckbox = itemView.findViewById(R.id.itemOverviewFavoriteCheckBox);
-                ImageButton itemDeleteButton = itemView.findViewById(R.id.itemDeleteButton);
-                TextView itemExpiryText = itemView.findViewById(R.id.itemExpiryTV);
+                viewHolder.itemName.setText(item.getName());
+                viewHolder.itemId.setText(String.valueOf(item.getId()));
                 String shortExpiryDateAsString = new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(item.getExpiry()));
 
                 if (item.getExpiry() == 0 || item.getExpiry() == 1) { // set design dependant on expiry status
                     Log.i("Overview-Expiry", "0 or 1 : Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
-                    itemExpiryText.setText(R.string.expire_none);
+                    viewHolder.itemExpiry.setText(R.string.expire_none);
                 } else {
                     if ((item.getExpiry() > 1) && (item.getExpiry() < new Date().getTime())) { // task is overdue -> emphasize and set text
                         Log.i("Overview-Expiry", ">1 und overdue Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
-                        itemExpiryText.setTextColor(Color.RED);
-                        itemExpiryText.setText(shortExpiryDateAsString);
+                        viewHolder.itemExpiry.setTextColor(Color.RED);
+                        viewHolder.itemExpiry.setText(shortExpiryDateAsString);
                     } else { // task not expired, set normal text
                         Log.i("Overview-Expiry", "task not expired Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
-                        itemExpiryText.setText(shortExpiryDateAsString);
+                        viewHolder.itemExpiry.setText(shortExpiryDateAsString);
                     }
                 }
 
-                itemDeleteButton.setOnClickListener(null); // remove previous Listener
-                itemDeleteButton.setOnClickListener(new View.OnClickListener() {
+                viewHolder.itemDelete.setOnClickListener(null); // remove previous Listener
+                viewHolder.itemDelete.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Log.i("OverviewAct-DeleteBtn", "DeleteButton was clicked.");
@@ -127,9 +124,9 @@ public class OverviewActivity extends AppCompatActivity {
                     }
                 });
 
-                itemFavoriteCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
-                itemFavoriteCheckbox.setChecked(item.isFavorite());
-                itemFavoriteCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                viewHolder.itemFavorite.setOnCheckedChangeListener(null); // remove previous Listener
+                viewHolder.itemFavorite.setChecked(item.isFavorite());
+                viewHolder.itemFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         item.setFavorite(isChecked);
@@ -142,9 +139,9 @@ public class OverviewActivity extends AppCompatActivity {
                     }
                 });
 
-                itemDoneCheckbox.setOnCheckedChangeListener(null); // remove previous Listener
-                itemDoneCheckbox.setChecked(item.isDone());
-                itemDoneCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                viewHolder.itemDone.setOnCheckedChangeListener(null); // remove previous Listener
+                viewHolder.itemDone.setChecked(item.isDone());
+                viewHolder.itemDone.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         item.setDone(isChecked);
@@ -196,26 +193,35 @@ public class OverviewActivity extends AppCompatActivity {
 
     protected void updateItemInList(DataItem item) {
         Snackbar.make(findViewById(R.id.contentView),"received itemName from detailview: " + item.getName(),Snackbar.LENGTH_INDEFINITE).show();
-        runOnUiThread(new Runnable() {
+        Log.d("Oview", item.getName() + "itemId: " + item.getId());
+        this.listViewAdapter.clear(); // delete all items from list, then crudOperations.readAllItems (EXPENSIVE)
+        crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
             @Override
-            public void run() {
-                ListView listView = findViewById(R.id.listView);
-                listView.setAdapter(listViewAdapter);
-                listViewAdapter.notifyDataSetChanged();
+            public void onresult(List<DataItem> result) {
+                listViewAdapter.addAll(result);
+                progress.setVisibility(View.GONE);
             }
         });
     }
 
     protected void deleteItemInList(DataItem item) {
         Snackbar.make(findViewById(R.id.contentView),"received itemId is deleted",Snackbar.LENGTH_INDEFINITE).show();
-        this.listViewAdapter.remove(item);
-        this.sortItems();
+        this.listViewAdapter.remove(item); // does nothing with "same" but different DataItem object
         crudOperations.deleteItem(item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
             @Override
             public void onresult(Boolean result) {
 
             }
         });
+        this.listViewAdapter.clear(); // delete all items from list, then crudOperations.readAllItems (EXPENSIVE)
+        crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
+            @Override
+            public void onresult(List<DataItem> result) {
+                listViewAdapter.addAll(result);
+                progress.setVisibility(View.GONE);
+            }
+        });
+        this.sortItems();
     }
 
     protected void showDetailviewForEdit(DataItem item) {
@@ -277,17 +283,9 @@ public class OverviewActivity extends AppCompatActivity {
         if (menuItemId == R.id.sortItemsByDone) {
             this.activeSortMode = SortMode.SORT_BY_DONE;
         }
+
         this.sortItems();
         return true;
-        /*
-        if (menuItem.getItemId() == R.id.sortItems) {
-            this.activeSortMode = (this.activeSortMode == SortMode.SORT_BY_ID ? SortMode.SORT_BY_NAME : SortMode.SORT_BY_ID);
-            this.sortItems();
-            return true;
-        } else {
-            return super.onOptionsItemSelected(menuItem);
-        }
-        */
     }
 
     private void sortItems() {
@@ -302,13 +300,17 @@ public class OverviewActivity extends AppCompatActivity {
             case SORT_BY_FAVORITE: listViewAdapter.sort(DataItem.SORT_BY_FAVORITE); break;
             default: break;
         }
+    }
 
-        /*
-        if (this.activeSortMode == SortMode.SORT_BY_ID) {
-            listViewAdapter.sort(DataItem.SORT_BY_ID);
-        } else {
-            listViewAdapter.sort(DataItem.SORT_BY_NAME);
-        }
-        */
+    public class ListitemViewHolder {
+
+        private DataItem item; // stretching the ViewHolder pattern
+
+        public TextView itemName;
+        public TextView itemId;
+        public CheckBox itemDone;
+        public CheckBox itemFavorite;
+        public ImageButton itemDelete;
+        public TextView itemExpiry;
     }
 }

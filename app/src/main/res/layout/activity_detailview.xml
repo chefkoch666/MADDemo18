@@ -36,6 +36,7 @@
             android:layoutDirection="rtl"
             android:text="@string/is_done"
             android:textColor="@android:color/black" />
+            <!-- android:button="@drawable/baseline_done_outline_24" /> -->
     </LinearLayout>
     <android.support.design.widget.TextInputLayout
         android:id="@+id/itemNameContainer"
@@ -77,7 +78,7 @@
         <EditText
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:id="@+id/in_date"
+            android:id="@+id/in_expiry"
             android:focusable="false"
             android:maxLines="1"
             android:inputType="none"
