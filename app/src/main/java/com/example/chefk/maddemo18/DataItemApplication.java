@@ -8,13 +8,25 @@ import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.model.LocalDataItemCRUDOperations;
+import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.User;
+import com.example.chefk.maddemo18.model.WebserviceURL;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 public class DataItemApplication extends Application implements IDataItemCRUDOperationsAsync {
 
+    public static enum CRUDStatus {ONLINE, OFFLINE};
+
     private IDataItemCRUDOperations crudOperations;
+    private RemoteDataItemCRUDOperationsImpl remoteOperations;
+
+    private static final WebserviceURL webserviceURLString = new WebserviceURL(); // see/change value in model WebserviceURL.java
+    private CRUDStatus crudStatus;
 
     @Override
     public void onCreate() {
@@ -22,6 +34,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         this.crudOperations = /*new SimpleDataItemCRUDOperationsImpl()*/
                  new LocalDataItemCRUDOperations(this);
                 /* new RemoteDataItemCRUDOperationsImpl(); */
+        this.remoteOperations = new RemoteDataItemCRUDOperationsImpl();
     }
 
     public IDataItemCRUDOperationsAsync getCRUDOperations() {
@@ -123,6 +136,45 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
             @Override
             protected void onPostExecute(Boolean aBoolean) {
                 onresult.onresult(aBoolean);
+            }
+        }.execute();
+    }
+
+    public CRUDStatus getCrudStatus() {
+        return crudStatus;
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public void initialiseCRUDOperations(final ResultCallback<CRUDStatus> oninitialised) {
+        new AsyncTask<Void, Void, CRUDStatus>() { // check if webservice is reachable on Thread
+            @Override
+            protected CRUDStatus doInBackground(Void... voids) {
+                crudStatus = CRUDStatus.OFFLINE; // assume OFFLINE until url has been checked
+                HttpURLConnection connection = null;
+                try {
+                    URL url = new URL(webserviceURLString.getUrl()); // see very top
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setConnectTimeout(1000);
+                    connection.setReadTimeout(1000);
+                    int code = connection.getResponseCode();
+                    if (code == 200) {
+                        crudStatus = CRUDStatus.ONLINE;
+                    } else {
+                        crudStatus = CRUDStatus.OFFLINE;
+                    }
+                    return crudStatus;
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    return CRUDStatus.OFFLINE;  // return safely with OFFLINE
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(CRUDStatus s) {
+                super.onPostExecute(s);
+                oninitialised.onresult(s);
             }
         }.execute();
     }

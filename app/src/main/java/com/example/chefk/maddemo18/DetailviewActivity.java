@@ -1,8 +1,12 @@
 package com.example.chefk.maddemo18;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -120,14 +124,39 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
     }
 
     public void deleteItem() {
-            Log.i("DetailviewActivity", "Item with id : " + String.valueOf(this.item.getId()) + " has been deleted");
-            crudOperations.deleteItem(this.item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
-                @Override
-                public void onresult(Boolean result) {
-                    Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
-                    returnToOverview();
+        Log.i("DetailviewActivity", "Item with id : " + String.valueOf(this.item.getId()) + " has been deleted");
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        crudOperations.deleteItem(item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                            @Override
+                            public void onresult(Boolean result) {
+                                Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
+                                returnToOverview();
+                            }
+                        });
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        dialog.dismiss();
+                        break;
                 }
-            });
+            }
+        };
+        AlertDialog.Builder ab = new AlertDialog.Builder(this);
+        ab.setMessage("Are you sure to delete?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+        /*
+        crudOperations.deleteItem(this.item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+            @Override
+            public void onresult(Boolean result) {
+                Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
+                returnToOverview();
+            }
+        });
+        */
     }
 
     public void selectDate() {

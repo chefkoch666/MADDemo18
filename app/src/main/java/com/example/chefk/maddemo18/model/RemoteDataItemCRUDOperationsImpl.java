@@ -16,6 +16,8 @@ import retrofit2.http.Path;
 
 public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations {
 
+    private static final WebserviceURL webserviceURLString = new WebserviceURL();
+
     public static interface TodoWebAPI {
 
         @POST("/api/todos")
@@ -41,9 +43,7 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     public RemoteDataItemCRUDOperationsImpl() {
         Retrofit retrofit = new Retrofit.Builder()
-                //.baseUrl("http://10.0.2.2:8080") // also change in LoginActivity.java
-                .baseUrl("http://172.16.42.58:8080") // also change in LoginActivity.java
-                //.baseUrl("http://134.245.70.212:8080") // also change in LoginActivity.java
+                .baseUrl(webserviceURLString.getUrl()) // see model WebserviceURL.java
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

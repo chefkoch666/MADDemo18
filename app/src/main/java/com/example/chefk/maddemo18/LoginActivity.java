@@ -40,6 +40,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.User;
 import com.example.chefk.maddemo18.model.WebserviceURL;
@@ -61,21 +62,11 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
-    //private static final String webserviceURLString = "http://172.16.42.58:8080"; // Home
-    //private static final String webserviceURLString = "http://134.245.70.212:8080"; // Office
-    //private static final String webserviceURLString = "http://172.16.42.58:8080"; // Laptop
     private static final WebserviceURL webserviceURLString = new WebserviceURL(); // see/change value in model WebserviceURL.java
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "s@bht.de:000000", "bar@example.com:world"
-    };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -96,6 +87,22 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        ((DataItemApplication) getApplication()).initialiseCRUDOperations(new IDataItemCRUDOperationsAsync.ResultCallback<DataItemApplication.CRUDStatus>() {
+            @Override
+            public void onresult(DataItemApplication.CRUDStatus result) {
+                if (result == DataItemApplication.CRUDStatus.OFFLINE) {
+                    showOfflineWarning.show(getFragmentManager(),"offline-warning");
+                } else {
+                    Toast.makeText(LoginActivity.this, "App online. CRUD operations will be synced!", Toast.LENGTH_SHORT).show();
+                }
+
+                initialiseView();
+            }
+        });
+    }
+
+private void initialiseView() {
         // Set up the login form.
         mEmailView = findViewById(R.id.email);
         populateAutoComplete();
@@ -141,52 +148,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
+        /*
         if (hasNetworkConnectivity()) { // check general network connectivity first, before trying to reach webservice
             Toast.makeText(LoginActivity.this, "OK - general network connectivity", Toast.LENGTH_SHORT).show();
-            new AsyncTask<Void, Void, String>() { // check if webservice is reachable on Thread
-                @Override
-                protected String doInBackground(Void... voids) {
-                    HttpURLConnection connection = null;
-                    try {
-                        URL url = new URL(webserviceURLString.getUrl()); // see very top // TODO maybe simple class in model for all Activities?
-                        connection = (HttpURLConnection) url.openConnection();
-                        connection.setConnectTimeout(1000);
-                        connection.setReadTimeout(1000);
-                        int code = connection.getResponseCode();
-                        String responseCodeAsString = "";
-                        if (code == 200) {
-                            responseCodeAsString = String.valueOf(code);
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Webservice unreachable", Toast.LENGTH_SHORT).show();
-                            showOfflineWarning.show(getFragmentManager(),"offline-warning");
-                        }
-                        return responseCodeAsString;
-                    } catch (MalformedURLException e1) {
-                        e1.printStackTrace();
-                        return null;
-                    } catch (IOException e2) {
-                        e2.printStackTrace();
-                        return null;
-                    } finally {
-                        if (connection != null) {
-                            connection.disconnect();
-                        }
-                    }
-                }
-
-                /*
-                @Override
-                protected void onPostExecute(String s) {
-                    super.onPostExecute(s);
-                    Toast.makeText(LoginActivity.this, "Webservice reachable", Toast.LENGTH_SHORT).show();
-                }
-                */
-            }.execute();
         } else { // we do not have network connectivity at all, show warning and call next activity
-            showOfflineWarning.show(getFragmentManager(),"offline-warning");
+            //showOfflineWarning.show(getFragmentManager(),"offline-warning");
         }
+        */
     }
 
+    /*
     public boolean hasNetworkConnectivity() {
         ConnectivityManager connMan = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         try {
@@ -197,6 +168,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         return false;
     }
+    */
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -207,9 +179,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
         if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
@@ -234,13 +203,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        /*
-        if (requestCode == REQUEST_READ_CONTACTS) {
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                populateAutoComplete();
-            }
-        }
-        */
         populateAutoComplete();
     }
 
@@ -292,11 +254,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            //mAuthTask = new UserLoginTask(email, password);
             mAuthTask = new UserLoginTask(email,password);
             mAuthTaskUser = new User(email,password);
-            //mAuthTask.execute((Void) null);   // ist das die NULL Objekt Referenz?
-            mAuthTask.execute();                // geht es ohne?
+            mAuthTask.execute();
         }
     }
 
@@ -358,13 +318,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         List<String> emails = new ArrayList<>();
         emails.add("s@bht.de");
-        /*
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            emails.add(cursor.getString(ProfileQuery.ADDRESS));
-            cursor.moveToNext();
-        }
-*/
         addEmailsToAutoComplete(emails);
     }
 
@@ -409,37 +362,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Boolean doInBackground(User... params) {
-            // TODO: attempt authentication against a network service.
-            // Versuch gegen webservice zu authentifizieren
             Boolean resultAuth = false;
             try { // try threaded webservice access
                 Retrofit retrofit = new Retrofit.Builder()
-                        //.baseUrl("http://134.245.70.212:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
-                        .baseUrl("http://172.16.42.58:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
-                        //.baseUrl("http://10.0.2.2:8080") // Also change in RemoteDataItemCRUDOperationsImpl.java
+                        .baseUrl(webserviceURLString.getUrl()) // see model WebserviceURL.java
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 Log.i("LoginAct-inside-try", "Bevor serviceProxy");
                 final RemoteDataItemCRUDOperationsImpl.TodoWebAPI serviceProxy = retrofit.create(RemoteDataItemCRUDOperationsImpl.TodoWebAPI.class);
                 Log.i("LoginAct-inside-try", "Value of resultAuth is: " + String.valueOf(serviceProxy.authenticateUser(mAuthTaskUser).execute().code()));
                 resultAuth = serviceProxy.authenticateUser(mAuthTaskUser).execute().body();
-                //resultAuth = serviceProxy.authenticateUser(params[0]).execute().body();
                 //Log.i("LoginAct-inside-try", "Value of resultAuth is: " + Boolean.toString(resultAuth));
             } catch (IOException e2) {
                 return false;
             }
-            return resultAuth; //  TODO bekommt success jetzt den Wert?
-            /*
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            return true;
-            */
+            return resultAuth; //  TODO bekommt success jetzt den Wert? do DEBUGGING
 
             /*
             try {
@@ -447,14 +384,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
             }
 
             return true;
@@ -492,7 +421,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-                            //callOverviewIntent.putExtra("CRUD_TO_USE", 0);
                             startActivity(callOverviewIntent);
                         }
                     });
@@ -503,7 +431,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         public void onCancel(DialogInterface dialog) {
             Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
-            //callOverviewIntent.putExtra("CRUD_TO_USE", 0);
             startActivity(callOverviewIntent);
         }
     }
