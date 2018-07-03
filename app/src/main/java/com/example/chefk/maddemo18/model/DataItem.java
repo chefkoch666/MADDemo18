@@ -36,6 +36,16 @@ public class DataItem implements Serializable {
     private boolean done;
     private boolean favorite;
 
+    public List<String> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(List<String> contacts) {
+        this.contacts = contacts;
+    }
+
+    private List<String> contacts;
+
     public DataItem() {
 
     }

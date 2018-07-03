@@ -33,7 +33,9 @@ import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.view.DetailviewActions;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class DetailviewActivity extends AppCompatActivity implements DetailviewActions, /*View.OnClickListener,*/ CompoundButton.OnCheckedChangeListener {
 
@@ -148,15 +150,6 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         AlertDialog.Builder ab = new AlertDialog.Builder(this);
         ab.setMessage("Are you sure to delete?").setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
-        /*
-        crudOperations.deleteItem(this.item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
-            @Override
-            public void onresult(Boolean result) {
-                Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
-                returnToOverview();
-            }
-        });
-        */
     }
 
     public void selectDate() {
@@ -205,6 +198,11 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             Log.i("Dview", "got name: " + contactName);
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            if (item.getContacts() == null) {
+                List<String> currentItemContacts = new ArrayList<>();
+                currentItemContacts.add(contactId);
+                item.setContacts(currentItemContacts);
+            }
             Log.i("Dview", "got id: " + contactId);
 
             int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
