@@ -66,7 +66,7 @@ public class OverviewActivity extends AppCompatActivity {
         createItemButton = findViewById(R.id.createItem);
         progress = findViewById(R.id.progressBar);
 
-        this.activeSortMode = SortMode.SORT_BY_DONE; //this.activeSortMode = SortMode.SORT_BY_ID;
+        this.activeSortMode = SortMode.SORT_BY_DONE;
 
         listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem, itemsList){
             @NonNull
@@ -124,6 +124,7 @@ public class OverviewActivity extends AppCompatActivity {
             @Override
             public void onresult(List<DataItem> result) {
                 listViewAdapter.addAll(result);
+                listViewAdapter.sort(DataItem.SORT_BY_DONE); // ist hier zu sortieren eine gute Idee?
                 progress.setVisibility(View.GONE);
             }
         });
@@ -150,7 +151,7 @@ public class OverviewActivity extends AppCompatActivity {
         ((ListView)this.listView).setSelection(this.listViewAdapter.getPosition(item));
     }
 
-    protected void updateItemInList(DataItem item) {
+    protected void updateItemInList(DataItem item,long itemId) {
         Snackbar.make(findViewById(R.id.contentView),"received itemName from detailview: " + item.getName(),Snackbar.LENGTH_INDEFINITE).show();
         Log.d("Oview", item.getName() + "itemId: " + item.getId());
         this.listViewAdapter.clear(); // delete all items from list, then crudOperations.readAllItems (EXPENSIVE)
@@ -158,9 +159,11 @@ public class OverviewActivity extends AppCompatActivity {
             @Override
             public void onresult(List<DataItem> result) {
                 listViewAdapter.addAll(result);
+                listViewAdapter.sort(DataItem.SORT_BY_DONE);
                 progress.setVisibility(View.GONE);
             }
         });
+        this.sortItems();
     }
 
     protected void deleteItemInList(DataItem item) {
@@ -177,6 +180,7 @@ public class OverviewActivity extends AppCompatActivity {
             @Override
             public void onresult(List<DataItem> result) {
                 listViewAdapter.addAll(result);
+                listViewAdapter.sort(DataItem.SORT_BY_DONE);
                 progress.setVisibility(View.GONE);
             }
         });
@@ -199,7 +203,7 @@ public class OverviewActivity extends AppCompatActivity {
     protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
         if (requestCode == CALL_EDIT_ITEM || requestCode == CALL_CREATE_ITEM) {
             if (resultCode == RESULT_OK) {
-                long itemId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
+                final long itemId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
 
                crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
                    @Override
@@ -210,7 +214,7 @@ public class OverviewActivity extends AppCompatActivity {
                                //deleteItemInList(result); // has been deleted already via CRUD in Detailview
                            } else {
                                Log.i("OverviewActivity", "updateItemInList gets called.");
-                               updateItemInList(result);
+                               updateItemInList(result,itemId);
                            }
                        } else {
                            addItemToList(result);
@@ -289,7 +293,7 @@ public class OverviewActivity extends AppCompatActivity {
                         crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
                             @Override
                             public void onresult(Boolean result) {
-                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " updated", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " updated", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -304,7 +308,7 @@ public class OverviewActivity extends AppCompatActivity {
                         crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
                             @Override
                             public void onresult(Boolean result) {
-                                Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(OverviewActivity.this, "Item with id " + item.getId() + " has changed FAVORITE status!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }

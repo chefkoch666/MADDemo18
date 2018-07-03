@@ -123,38 +123,47 @@ public class DataItem implements Serializable {
     public static Comparator<DataItem> SORT_BY_DATE = new Comparator<DataItem>() {
         @Override
         public int compare(DataItem item1, DataItem item2) { // sort expiry, then done
-            /*
-            // test chained compare
-            for (int x=1; x<=2; x++) {
+            for (int x=1; x<=2; x++) { // test chained compare
                 if (x==1) {
-                    int result = Boolean.compare(item1.isDone(), item2.isDone());
+                    int result = -1 * Boolean.compare(item1.isDone(), item2.isDone());
                     if (result != 0) { return result; }
                 }
                 if (x==2) {
-                    int result = (int) (item1.getExpiry() - item2.getExpiry());
+                    int result = -1 * (int)(item1.getExpiry() - item2.getExpiry());
                     if (result != 0) { return result; }
                 }
             } // end for (int x=1; x<=2; x++)
             return 0;
-            */
-            // ab hier original for multi sort
-            return -1 * (int)(item1.getExpiry() - item2.getExpiry()); // TODO test it
         }
     };
 
     public static Comparator<DataItem> SORT_BY_FAVORITE = new Comparator<DataItem>() { // had to increase API level from 17 to 19
         @Override
         public int compare(DataItem item1, DataItem item2) {
+            for (int x=1; x<=2; x++) { // test chained compare
+                if (x==1) {
+                    int result = -1 * Boolean.compare(item1.isDone(), item2.isDone());
+                    if (result != 0) { return result; }
+                }
+                if (x==2) {
+                    int result = -1 * Boolean.compare(item1.isFavorite(), item2.isFavorite());
+                    if (result != 0) { return result; }
+                }
+            } // end for (int x=1; x<=2; x++)
+            return 0;
+            /*
+            // vor multi sort
             boolean b1 = item1.isFavorite();
             boolean b2 = item2.isFavorite();
             //return Boolean.compare(b1, b2); // Call requires API level 19 (current min is 17): java.lang.Boolean#compare
             return -1 * Boolean.compare(b1, b2); // reverseOrder, Call requires API level 19 (current min is 17): java.lang.Boolean#compare
+            */
         }
     };
 
     public static Comparator<DataItem> SORT_BY_DONE = new Comparator<DataItem>() { // had to increase API level from 17 to 19
         @Override
-        public int compare(DataItem item1, DataItem item2) { // TODO test it
+        public int compare(DataItem item1, DataItem item2) {
             boolean b1 = item1.isDone();
             boolean b2 = item2.isDone();
             //return Boolean.compare(b1, b2); // Call requires API level 19 (current min is 17): java.lang.Boolean#compare

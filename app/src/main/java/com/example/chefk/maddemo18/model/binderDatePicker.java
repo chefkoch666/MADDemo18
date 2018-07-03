@@ -35,7 +35,7 @@ public class binderDatePicker {
     }
 
     @BindingAdapter("realValue")
-    public static void setRealValue(EditText view, long value) { // TODO add Locale.US to SMF, then check in all Views if it works correctly
+    public static void setRealValue(EditText view, long value) {
         if (value == 0 || value == 1) {
             view.setText(null);
             view.setHint("Expiry");

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
@@ -13,9 +14,9 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
     private SQLiteDatabase db;
 
     private static final String TABLE_DATAITEMS = "DATAITEMS";
-    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE", "FAVORITE"};
+    private static final String[] ALL_COLUMNS = new String[]{"ID", "NAME", "DESCRIPTION", "EXPIRY", "DONE", "FAVORITE", "CONTACTS"};
 
-    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER DEFAULT 0,DONE INTEGER,FAVORITE INTEGER)";
+    private static final String CREATION_QUERY = "CREATE TABLE DATAITEMS (ID INTEGER PRIMARY KEY,NAME TEXT,DESCRIPTION TEXT,EXPIRY INTEGER DEFAULT 0,DONE INTEGER,FAVORITE INTEGER,CONTACTS TEXT DEFAULT '0')";
 
     public LocalDataItemCRUDOperations(Context ctx) {
         this.db = ctx.openOrCreateDatabase("mysqlitedb.sqlite",Context.MODE_PRIVATE,null);
@@ -34,6 +35,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         values.put("EXPIRY",item.getExpiry());
         values.put("DONE",item.isDone() ? 1 : 0);
         values.put("FAVORITE",item.isFavorite() ? 1 : 0);
+        if (item.getContacts() != null) values.put("CONTACTS",android.text.TextUtils.join(",",item.getContacts()));
 
         long id = db.insert(TABLE_DATAITEMS,null,values);
         item.setId(id);
@@ -64,7 +66,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         item.setExpiry(cursor.getLong(cursor.getColumnIndex("EXPIRY")));
         item.setDone(cursor.getInt(cursor.getColumnIndex("DONE")) == 1);
         item.setFavorite(cursor.getInt(cursor.getColumnIndex("FAVORITE")) == 1);
-
+        item.setContacts(new ArrayList<String>(Arrays.asList(cursor.getString(cursor.getColumnIndex("CONTACTS")).split("\\s*,\\s*"))));
         return item;
     }
 
@@ -87,6 +89,7 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         values.put("EXPIRY",item.getExpiry());
         values.put("DONE",item.isDone());
         values.put("FAVORITE",item.isFavorite());
+        if (item.getContacts() != null) values.put("CONTACTS",android.text.TextUtils.join(",",item.getContacts()));
         db.update(TABLE_DATAITEMS,values,"id=?", new String[]{String.valueOf(id)});
         return true;
     }

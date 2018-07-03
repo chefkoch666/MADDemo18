@@ -97,7 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/itemContactsTV"
-            android:text="@{String.valueOf(item.contacts)}"
+            android:text="@{String.valueOf(item.contacts[0])}"
             android:textSize="20sp"
             android:padding="10dp"
             android:hint="Contacts" />
