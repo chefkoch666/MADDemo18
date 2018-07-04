@@ -52,6 +52,8 @@ public class SimpleDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         return false;
     }
 
+    public boolean deleteAllTodos() { return false; }
+
     @Override
     public boolean authenticateUser(User user) {
         return true;

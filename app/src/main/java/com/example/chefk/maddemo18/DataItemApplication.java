@@ -14,7 +14,6 @@ import com.example.chefk.maddemo18.model.WebserviceURL;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     public static enum CRUDStatus {ONLINE, OFFLINE};
 
     private IDataItemCRUDOperations crudOperations;
-    private RemoteDataItemCRUDOperationsImpl remoteOperations;
+    private IDataItemCRUDOperations remoteOperations;
 
     private static final WebserviceURL webserviceURLString = new WebserviceURL(); // see/change value in model WebserviceURL.java
     private CRUDStatus crudStatus;
@@ -31,9 +30,9 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     @Override
     public void onCreate() {
         super.onCreate();
-        this.crudOperations = /*new SimpleDataItemCRUDOperationsImpl()*/
-                 new LocalDataItemCRUDOperations(this);
-                /* new RemoteDataItemCRUDOperationsImpl(); */
+        this.crudOperations = new LocalDataItemCRUDOperations(this);
+                /*new RemoteDataItemCRUDOperationsImpl();*/
+                /*new SimpleDataItemCRUDOperationsImpl()*/
         this.remoteOperations = new RemoteDataItemCRUDOperationsImpl();
     }
 
@@ -48,7 +47,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected Long doInBackground(DataItem... dataItems) {
-                return crudOperations.createItem(dataItems[0]);
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.createItem(dataItems[0]);
+                } else {
+                    return remoteOperations.createItem(dataItems[0]);
+                }
             }
 
             @Override
@@ -64,7 +67,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Void,Void,List<DataItem>>() {
             @Override
             protected List<DataItem> doInBackground(Void... voids) {
-                return crudOperations.readAllItems();
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.readAllItems();
+                } else {
+                    return remoteOperations.readAllItems();
+                }
             }
 
             @Override
@@ -81,7 +88,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected DataItem doInBackground(Long... longs) {
-                return crudOperations.readItem(longs[0]);
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.readItem(longs[0]);
+                } else {
+                    return remoteOperations.readItem(longs[0]);
+                }
             }
 
             @Override
@@ -98,7 +109,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected Boolean doInBackground(Void... voids) {
-                return crudOperations.updateItem(id, item);
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.updateItem(id, item);
+                } else {
+                    return remoteOperations.updateItem(id, item);
+                }
             }
 
             @Override
@@ -114,7 +129,32 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Long,Void,Boolean>() {
             @Override
             protected Boolean doInBackground(Long... longs) {
-                return crudOperations.deleteItem(id);
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.deleteItem(id);
+                } else {
+                    return remoteOperations.deleteItem(id);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                onresult.onresult(aBoolean);
+            }
+        }.execute();
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public void deleteAllTodos(final ResultCallback<Boolean> onresult) {
+        new AsyncTask<Void,Void,Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.deleteAllTodos();
+                } else {
+                    return remoteOperations.deleteAllTodos();
+                }
             }
 
             @Override
@@ -130,7 +170,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<User,Void,Boolean>() {
             @Override
             protected Boolean doInBackground(User... users) {
-                return crudOperations.authenticateUser(user);
+                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                    return crudOperations.authenticateUser(user);
+                } else {
+                    return remoteOperations.authenticateUser(user);
+                }
             }
 
             @Override

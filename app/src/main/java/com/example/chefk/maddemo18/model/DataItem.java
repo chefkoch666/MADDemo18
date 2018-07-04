@@ -1,5 +1,7 @@
 package com.example.chefk.maddemo18.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -7,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 public class DataItem implements Serializable {
-    
+    /*
     class DataItemChainedComparator implements Comparator<DataItem> {
 
         private List<Comparator<DataItem>> listComparators;
@@ -28,13 +30,14 @@ public class DataItem implements Serializable {
             return 0;
         }
     }
+    */
 
     private long id = -1;
     private String name;
     private String description;
     private long expiry;
     private boolean done;
-    private boolean favorite;
+    @SerializedName("favourite") private boolean favorite;
 
     public List<String> getContacts() {
         return contacts;

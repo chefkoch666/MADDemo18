@@ -127,7 +127,7 @@ public class OverviewActivity extends AppCompatActivity {
         ((ListView)listView).setAdapter(listViewAdapter);
 
         progress.setVisibility(View.VISIBLE);
-
+/*
         crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
             @Override
             public void onresult(List<DataItem> result) {
@@ -136,17 +136,56 @@ public class OverviewActivity extends AppCompatActivity {
                 Log.i("Oview-CRUD", "Count of listViewAdapter is : " + listViewAdapter.getCount());
                 if (!listViewAdapter.isEmpty() && (DataItemApplication.CRUDStatus.ONLINE == ((DataItemApplication)getApplication()).getCrudStatus())) { // && online check?
                     hasLocalTodos = true;
-                    /*
-                    for (final DataItem tempItem : result) {
+                }
+                Log.i("Oview-CRUD", "hasLocalTodos : " + Boolean.toString(hasLocalTodos));
+                listViewAdapter.sort(DataItem.SORT_BY_DONE); // ist hier zu sortieren eine gute Idee?
+                progress.setVisibility(View.GONE);
+            }
+        });
+        */
+/*
+        ((ListView) listView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                DataItem selectedItem = listViewAdapter.getItem(position);
+                showDetailviewForEdit(selectedItem);
+            }
+        });
+        */
+
+        syncOnFirstStartup();
+
+        createItemButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDetailviewForCreate();
+            }
+        });
+    }
+
+    protected void syncOnFirstStartup() {
+        crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
+            @Override
+            public void onresult(List<DataItem> result) {
+                listViewAdapter.addAll(result);
+                Log.i("Oview-CRUD", "listViewAdapter result of isEmpty() : " + Boolean.toString(listViewAdapter.isEmpty()));
+                Log.i("Oview-CRUD", "Count of listViewAdapter is : " + listViewAdapter.getCount());
+                if (!listViewAdapter.isEmpty() && (DataItemApplication.CRUDStatus.ONLINE == ((DataItemApplication)getApplication()).getCrudStatus())) {
+                    hasLocalTodos = true;
+                }
+                if (hasLocalTodos) { // delete all todos on webservice, then sync local todos to webservice
+                    remoteOperations.deleteAllTodos(new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() { // delete all todos on webservice
+                        @Override
+                        public void onresult(Boolean result) { }
+                    });
+                    for (DataItem tempItem : itemsList) { // then sync local todos to webservice
                         remoteOperations.createItem(tempItem, new IDataItemCRUDOperationsAsync.ResultCallback<Long>() {
                             @Override
                             public void onresult(Long result) {
-                                tempItem.setId(result);
-                                //returnToOverview();
+
                             }
                         });
                     }
-                    */
                 }
                 Log.i("Oview-CRUD", "hasLocalTodos : " + Boolean.toString(hasLocalTodos));
                 listViewAdapter.sort(DataItem.SORT_BY_DONE); // ist hier zu sortieren eine gute Idee?
@@ -162,12 +201,28 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
-        createItemButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDetailviewForCreate();
-            }
-        });
+        /*
+        if (hasLocalTodos) {
+            // delete all at webservice, then sync all local todos to webservice
+            remoteOperations.deleteAllTodos(new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
+                @Override
+                public void onresult(Boolean result) {
+
+                }
+            });
+            Log.e("Oview-deleteAll", "tried to remoteOperations.deleteAllTodos()");
+            */
+        if (!hasLocalTodos && (DataItemApplication.CRUDStatus.ONLINE == ((DataItemApplication)getApplication()).getCrudStatus())) {
+            // read all todos on webservice to local (empty) database IF we are online
+            remoteOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
+                @Override
+                public void onresult(List<DataItem> result) {
+                    listViewAdapter.addAll(result);
+                    listViewAdapter.sort(DataItem.SORT_BY_DONE); // ist hier zu sortieren eine gute Idee?
+                    progress.setVisibility(View.GONE);
+                }
+            });
+        }
     }
 
     protected void addItemToList(DataItem item) {

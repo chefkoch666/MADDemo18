@@ -24,6 +24,8 @@ public interface IDataItemCRUDOperationsAsync {
 
     public void deleteItem(long id, ResultCallback<Boolean> onresult);
 
+    public void deleteAllTodos(ResultCallback<Boolean> onresult);
+
     public void authenticateUser(User user, ResultCallback<Boolean> onresult);
 
 }

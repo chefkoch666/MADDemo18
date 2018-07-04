@@ -35,6 +35,9 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         @DELETE("/api/todos/{id}")
         public Call<Boolean> deleteItem(@Path("id") long id);
 
+        @DELETE("/api/todos")
+        public Call<Boolean> deleteAllTodos();
+
         @PUT("/api/users/auth")
         public Call<Boolean> authenticateUser(@Body User user);
     }
@@ -100,6 +103,15 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     public boolean deleteItem(long id) {
         try {
             return serviceProxy.deleteItem(id).execute().body() != null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+            //e.printStackTrace();
+        }
+    }
+
+    public boolean deleteAllTodos() {
+        try {
+            return serviceProxy.deleteAllTodos().execute().body() != null;
         } catch (IOException e) {
             throw new RuntimeException(e);
             //e.printStackTrace();

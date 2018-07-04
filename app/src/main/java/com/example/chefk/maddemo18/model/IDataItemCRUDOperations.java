@@ -14,5 +14,7 @@ public interface IDataItemCRUDOperations {
 
     public boolean deleteItem(long id);
 
+    public boolean deleteAllTodos();
+
     public boolean authenticateUser(User user);
 }

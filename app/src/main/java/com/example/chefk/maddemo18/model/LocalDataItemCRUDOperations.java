@@ -101,6 +101,12 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
     }
 
     @Override
+    public boolean deleteAllTodos() {
+        db.execSQL("delete from "+ TABLE_DATAITEMS);
+        return true;
+    }
+
+    @Override
     public boolean authenticateUser(User user) {
         return true;
     }
