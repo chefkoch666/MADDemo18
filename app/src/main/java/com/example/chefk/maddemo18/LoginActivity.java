@@ -147,28 +147,7 @@ private void initialiseView() {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-        /*
-        if (hasNetworkConnectivity()) { // check general network connectivity first, before trying to reach webservice
-            Toast.makeText(LoginActivity.this, "OK - general network connectivity", Toast.LENGTH_SHORT).show();
-        } else { // we do not have network connectivity at all, show warning and call next activity
-            //showOfflineWarning.show(getFragmentManager(),"offline-warning");
-        }
-        */
     }
-
-    /*
-    public boolean hasNetworkConnectivity() {
-        ConnectivityManager connMan = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        try {
-            NetworkInfo netInfo = connMan.getActiveNetworkInfo();
-            return netInfo != null && netInfo.isConnectedOrConnecting();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-    */
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -376,18 +355,7 @@ private void initialiseView() {
             } catch (IOException e2) {
                 return false;
             }
-            return resultAuth; //  TODO bekommt success jetzt den Wert? do DEBUGGING
-
-            /*
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            return true;
-            */
+            return resultAuth;
         }
 
         @Override
@@ -396,7 +364,6 @@ private void initialiseView() {
             showProgress(false);
 
             if (success) {
-                //finish();
                 Intent callOverviewIntent = new Intent("com.example.chefk.maddemo18.OverviewActivity");
                 startActivity(callOverviewIntent);
             } else {
@@ -415,8 +382,7 @@ private void initialiseView() {
     public static class ShowOfflineWarningDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity()); // Use the Builder class for convenient dialog construction
             builder.setMessage(R.string.dialog_warning_offline)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -424,8 +390,7 @@ private void initialiseView() {
                             startActivity(callOverviewIntent);
                         }
                     });
-            // Create the AlertDialog object and return it
-            return builder.create();
+            return builder.create(); // Create the AlertDialog object and return it
         }
 
         @Override

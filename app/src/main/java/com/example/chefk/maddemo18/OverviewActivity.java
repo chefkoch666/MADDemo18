@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Locale;
 
 
-//public class OverviewActivity extends FragmentActivity implements NoticeDialogFragment.NoticeDialogListener{
 public class OverviewActivity extends AppCompatActivity {
 
     private IDataItemCRUDOperationsAsync crudOperations;
+    private IDataItemCRUDOperationsAsync remoteOperations;
 
     private List<DataItem> itemsList = new ArrayList<>();
     private ArrayAdapter<DataItem> listViewAdapter;
@@ -55,12 +55,19 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     private SortMode activeSortMode;
+    private Boolean hasLocalTodos = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
         this.crudOperations =  ((DataItemApplication)getApplication()).getCRUDOperations();
+        this.remoteOperations = ((DataItemApplication)getApplication()).getCRUDOperations();
+
+        String mycrudstatus = ((DataItemApplication)getApplication()).getCrudStatus().name();
+        Log.i ("Oview-onoff", "mycrudstatus is : " + mycrudstatus);
+
+
 
         listView = findViewById(R.id.listView);
         createItemButton = findViewById(R.id.createItem);
@@ -120,10 +127,28 @@ public class OverviewActivity extends AppCompatActivity {
         ((ListView)listView).setAdapter(listViewAdapter);
 
         progress.setVisibility(View.VISIBLE);
+
         crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
             @Override
             public void onresult(List<DataItem> result) {
                 listViewAdapter.addAll(result);
+                Log.i("Oview-CRUD", "listViewAdapter result of isEmpty() : " + Boolean.toString(listViewAdapter.isEmpty()));
+                Log.i("Oview-CRUD", "Count of listViewAdapter is : " + listViewAdapter.getCount());
+                if (!listViewAdapter.isEmpty() && (DataItemApplication.CRUDStatus.ONLINE == ((DataItemApplication)getApplication()).getCrudStatus())) { // && online check?
+                    hasLocalTodos = true;
+                    /*
+                    for (final DataItem tempItem : result) {
+                        remoteOperations.createItem(tempItem, new IDataItemCRUDOperationsAsync.ResultCallback<Long>() {
+                            @Override
+                            public void onresult(Long result) {
+                                tempItem.setId(result);
+                                //returnToOverview();
+                            }
+                        });
+                    }
+                    */
+                }
+                Log.i("Oview-CRUD", "hasLocalTodos : " + Boolean.toString(hasLocalTodos));
                 listViewAdapter.sort(DataItem.SORT_BY_DONE); // ist hier zu sortieren eine gute Idee?
                 progress.setVisibility(View.GONE);
             }
