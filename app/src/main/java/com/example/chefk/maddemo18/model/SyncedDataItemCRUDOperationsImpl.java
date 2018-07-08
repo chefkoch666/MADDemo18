@@ -54,9 +54,9 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     @Override
     public boolean deleteItem(long id) {
-        boolean deleted = this.deleteItem(id);
+        boolean deleted = localCRUD.deleteItem(id);
         if (deleted && remoteAvailable) {
-            this.deleteItem(id); // 2x gleiche Funktion??
+            remoteCRUD.deleteItem(id);
         }
         return deleted;
     }

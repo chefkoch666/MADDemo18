@@ -3,6 +3,7 @@ package com.example.chefk.maddemo18;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.example.chefk.maddemo18.model.DataItem;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
@@ -15,6 +16,7 @@ import com.example.chefk.maddemo18.model.WebserviceURL;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
     public static enum CRUDStatus {ONLINE, OFFLINE}
 
-    private IDataItemCRUDOperations crudOperations;
+    //private IDataItemCRUDOperations crudOperations;
     private IDataItemCRUDOperations remoteOperations;
     private IDataItemCRUDOperations syncCrudOperations; // 2017
 
@@ -32,7 +34,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     @Override
     public void onCreate() {
         super.onCreate();
-        this.crudOperations = new LocalDataItemCRUDOperations(this);
+        //this.crudOperations = new LocalDataItemCRUDOperations(this);
                 /*new RemoteDataItemCRUDOperationsImpl();*/
                 /*new SimpleDataItemCRUDOperationsImpl()*/
         this.remoteOperations = new RemoteDataItemCRUDOperationsImpl();
@@ -50,11 +52,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected Long doInBackground(DataItem... dataItems) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) { // anstatt toggle, lokal immer ausführen
-                    return crudOperations.createItem(dataItems[0]);
-                } else {
-                    return remoteOperations.createItem(dataItems[0]);
-                }
+                return syncCrudOperations.createItem(dataItems[0]);
             }
 
             @Override
@@ -70,11 +68,11 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Void,Void,List<DataItem>>() {
             @Override
             protected List<DataItem> doInBackground(Void... voids) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.readAllItems();
-                } else {
+                Log.i("DIA-readAll", "how many local todos do we have? A: " + syncCrudOperations.readAllItems().size());
+                if (syncCrudOperations.readAllItems().size() == 0 && CRUDStatus.ONLINE == getCrudStatus()) { // zero local todos, request from webservice
                     return remoteOperations.readAllItems();
                 }
+                return syncCrudOperations.readAllItems();
             }
 
             @Override
@@ -91,11 +89,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected DataItem doInBackground(Long... longs) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.readItem(longs[0]);
-                } else {
-                    return remoteOperations.readItem(longs[0]);
-                }
+                return syncCrudOperations.readItem(longs[0]);
             }
 
             @Override
@@ -112,11 +106,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected Boolean doInBackground(Void... voids) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.updateItem(id, item);
-                } else {
-                    return remoteOperations.updateItem(id, item);
-                }
+                return syncCrudOperations.updateItem(id, item);
             }
 
             @Override
@@ -132,11 +122,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Long,Void,Boolean>() {
             @Override
             protected Boolean doInBackground(Long... longs) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.deleteItem(id);
-                } else {
-                    return remoteOperations.deleteItem(id);
-                }
+                return syncCrudOperations.deleteItem(id);
             }
 
             @Override
@@ -153,11 +139,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Void,Void,Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.deleteAllTodos();
-                } else {
-                    return remoteOperations.deleteAllTodos();
-                }
+                return syncCrudOperations.deleteAllTodos();
             }
 
             @Override
@@ -173,11 +155,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<User,Void,Boolean>() {
             @Override
             protected Boolean doInBackground(User... users) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
-                    return crudOperations.authenticateUser(user);
-                } else {
-                    return remoteOperations.authenticateUser(user);
-                }
+                return syncCrudOperations.authenticateUser(user);
             }
 
             @Override
@@ -206,8 +184,8 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
                     int code = connection.getResponseCode();
                     if (code == 200) crudStatus = CRUDStatus.ONLINE;
                     return crudStatus;
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                } catch (IOException|RuntimeException e1) {
+                    //e1.printStackTrace(); // hat das den Programmstopp verursacht, wenn der Webservice nicht läuft?
                     return CRUDStatus.OFFLINE;  // return safely with OFFLINE
                 } finally {
                     if (connection != null) connection.disconnect();
