@@ -9,6 +9,7 @@ import com.example.chefk.maddemo18.model.IDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 import com.example.chefk.maddemo18.model.LocalDataItemCRUDOperations;
 import com.example.chefk.maddemo18.model.RemoteDataItemCRUDOperationsImpl;
+import com.example.chefk.maddemo18.model.SyncedDataItemCRUDOperationsImpl;
 import com.example.chefk.maddemo18.model.User;
 import com.example.chefk.maddemo18.model.WebserviceURL;
 
@@ -19,10 +20,11 @@ import java.util.List;
 
 public class DataItemApplication extends Application implements IDataItemCRUDOperationsAsync {
 
-    public static enum CRUDStatus {ONLINE, OFFLINE};
+    public static enum CRUDStatus {ONLINE, OFFLINE}
 
     private IDataItemCRUDOperations crudOperations;
     private IDataItemCRUDOperations remoteOperations;
+    private IDataItemCRUDOperations syncCrudOperations; // 2017
 
     private static final WebserviceURL webserviceURLString = new WebserviceURL(); // see/change value in model WebserviceURL.java
     private CRUDStatus crudStatus;
@@ -34,6 +36,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
                 /*new RemoteDataItemCRUDOperationsImpl();*/
                 /*new SimpleDataItemCRUDOperationsImpl()*/
         this.remoteOperations = new RemoteDataItemCRUDOperationsImpl();
+        this.syncCrudOperations = new SyncedDataItemCRUDOperationsImpl(this); // 2017
     }
 
     public IDataItemCRUDOperationsAsync getCRUDOperations() {
@@ -47,7 +50,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
             @Override
             protected Long doInBackground(DataItem... dataItems) {
-                if (getCrudStatus() == CRUDStatus.OFFLINE) {
+                if (getCrudStatus() == CRUDStatus.OFFLINE) { // anstatt toggle, lokal immer ausführen
                     return crudOperations.createItem(dataItems[0]);
                 } else {
                     return remoteOperations.createItem(dataItems[0]);
@@ -201,11 +204,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
                     connection.setConnectTimeout(1000);
                     connection.setReadTimeout(1000);
                     int code = connection.getResponseCode();
-                    if (code == 200) {
-                        crudStatus = CRUDStatus.ONLINE;
-                    } else {
-                        crudStatus = CRUDStatus.OFFLINE;
-                    }
+                    if (code == 200) crudStatus = CRUDStatus.ONLINE;
                     return crudStatus;
                 } catch (IOException e1) {
                     e1.printStackTrace();

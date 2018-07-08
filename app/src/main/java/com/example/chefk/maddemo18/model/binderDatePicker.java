@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.EditText;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -52,9 +53,9 @@ public class binderDatePicker {
             Date dateFromString = formatter.parse(editText.getEditableText().toString());
             Log.i("DetailviewActivity", "Conversion success (maybe)");
             return dateFromString.getTime();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ParseException e) {
+            return 1;
+            //e.printStackTrace();
         }
-        return 1;
     }
 }

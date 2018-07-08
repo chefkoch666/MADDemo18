@@ -55,8 +55,4 @@
             android:layoutDirection="rtl"
             android:layout_alignParentEnd="true" />
     </RelativeLayout>
-    <!--
-    android:layout_gravity="end"
-    android:gravity="end"
-    -->
 </LinearLayout>

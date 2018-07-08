@@ -37,4 +37,8 @@
     <string name="sort_menu_by_done_title">Sort by Done</string>
     <string name="add_contacts_menu_title">Add Contacts</string>
     <string name="sort_menu_by_name_title">Sort by Name</string>
+    <string name="btn_mail">Mail</string>
+    <string name="btn_sms">SMS</string>
+    <string name="hint_contacts">Contacts</string>
+    <string name="btn_delete_contacts">Clear Contact</string>
 </resources>

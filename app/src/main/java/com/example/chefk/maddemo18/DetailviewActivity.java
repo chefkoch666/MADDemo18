@@ -3,9 +3,8 @@ package com.example.chefk.maddemo18;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,12 +18,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -47,7 +46,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
 
     private DataItem item;
 
-    Button btnDeleteTodo;
+    Button btnDeleteTodo, btnMail, btnSMS;
     EditText txtDate;
     CheckBox itemDoneCheckbox, itemFavoriteCheckbox;
     private String pickedDate = ""; // is used fot Date/Time picker to set the text of EditText only once
@@ -63,6 +62,8 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         txtDate = findViewById(R.id.in_expiry);
         itemDoneCheckbox = findViewById(R.id.itemDoneCheckbox);
         itemFavoriteCheckbox = findViewById(R.id.itemFavoriteCheckBox);
+        btnMail = findViewById(R.id.btn_mail);
+        btnSMS = findViewById(R.id.btn_sms);
 
         crudOperations = ((DataItemApplication)getApplication()).getCRUDOperations();
 
@@ -94,7 +95,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                 crudOperations.updateItem(item.getId(), item, new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
                     @Override
                     public void onresult(Boolean result) {
-                        Toast.makeText(DetailviewActivity.this,"Item with id " + item.getId() + " has been updates!", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(DetailviewActivity.this,"Item with id " + item.getId() + " has been updated!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -135,7 +136,7 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                         crudOperations.deleteItem(item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
                             @Override
                             public void onresult(Boolean result) {
-                                Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
+                                //Toast.makeText(DetailviewActivity.this, "Item has been deleted", Toast.LENGTH_LONG).show();
                                 returnToOverview();
                             }
                         });
@@ -186,6 +187,10 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
         datePickerDialog.show();
     }
 
+    public void deleteContacts() {
+        item.setContacts(new ArrayList<String>());
+    }
+
     public void pickContacts() {
         Intent pickContactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
         startActivityForResult(pickContactIntent,CALL_PICK_CONTACT);
@@ -198,24 +203,21 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
             String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             Log.i("Dview", "got name: " + contactName);
             String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            if (item.getContacts() == null) {
-                List<String> currentItemContacts = new ArrayList<>();
+            //if (item.getContacts() == null) {
+                List<String> currentItemContacts = new ArrayList<>(); // allow only one contact, overwrite
                 currentItemContacts.add(contactId);
                 item.setContacts(currentItemContacts);
-            }
+            //}
             Log.i("Dview", "got id: " + contactId);
+            Log.i("Dview", "got id from item object: " + item.getContacts());
 
             int hasReadContactsPermission = checkSelfPermission(Manifest.permission.READ_CONTACTS);
-            if (hasReadContactsPermission == PackageManager.PERMISSION_GRANTED) {
-                Log.i("Dview", "Access to contacts granted");
-            } else {
-                Log.i("Dview", "Access to contacts denied!");
+            if (hasReadContactsPermission != PackageManager.PERMISSION_GRANTED) { // request perms
                 requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},REQUEST_PERMISSIONS);
                 return;
             }
 
-            // access phone numbers
-            // "number=?"
+            // access phone numbers, "number=?"
             Cursor contactsPhoneNumberCursor = getContentResolver().query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     null,
@@ -223,16 +225,24 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                     new String[]{contactId},
                     null);
             while (contactsPhoneNumberCursor.moveToNext()) {
-                String currentPhoneNumber = contactsPhoneNumberCursor.getString(
-                        contactsPhoneNumberCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                Log.i("Dview", "got phoneNumber: " + currentPhoneNumber);
+                final String currentPhoneNumber = contactsPhoneNumberCursor.getString(
+                        contactsPhoneNumberCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)); //Log.i("Dview", "got phoneNumber: " + currentPhoneNumber);
                 int currentPhoneNumberType = contactsPhoneNumberCursor.getInt(contactsPhoneNumberCursor.getColumnIndex(
                         ContactsContract.CommonDataKinds.Phone.DATA2));
                 if (currentPhoneNumberType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE) {
-                    Log.i("Dview", "phoneNumber is a mobile number! " + currentPhoneNumber);
-
+                    btnSMS.setVisibility(View.VISIBLE); //Log.i("Dview", "phoneNumber is a mobile number! " + currentPhoneNumber);
+                    btnSMS.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Uri smsUri = Uri.parse("smsto:" + currentPhoneNumber);
+                            Intent sendSMSIntent = new Intent(Intent.ACTION_SENDTO, smsUri);
+                            sendSMSIntent.putExtra("sms_body", "Todo: " + item.getName() + ": " + (item.getDescription() == null ? "" : item.getDescription()));
+                            startActivity(sendSMSIntent);
+                        }
+                    });
                 }
             }
+            contactsPhoneNumberCursor.close();
 
             // access email address
             Cursor emailCursor = getContentResolver().query(
@@ -242,10 +252,29 @@ public class DetailviewActivity extends AppCompatActivity implements DetailviewA
                     new String[]{contactId},
                     null);
             while (emailCursor.moveToNext()) {
-                String currentEmailAddress = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
-                Log.i("Dview", "email: " + currentEmailAddress);
+                final String currentEmailAddress = emailCursor.getString(emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS));
+                btnMail.setVisibility(View.VISIBLE); //Log.i("Dview", "email: " + currentEmailAddress);
+                btnMail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String mailto = "mailto:" + currentEmailAddress +
+                                "&subject=" + Uri.encode("Todo: " + item.getName() + ": ") +
+                                "&body=" + Uri.encode((item.getDescription() == null ? "" : item.getDescription()));
+                        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                        emailIntent.setData(Uri.parse(mailto));
+
+                        try {
+                            startActivity(emailIntent);
+                        } catch (ActivityNotFoundException e) {
+                            Log.e("Dview-noMailApp", "No Mail App found for intent.");
+                            Toast.makeText(DetailviewActivity.this,"No Mail App found for intent.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
+            emailCursor.close();
         }
+        cursor.close();
     }
 
     public void returnToOverview() {

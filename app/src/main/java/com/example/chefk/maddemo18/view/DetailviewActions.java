@@ -5,4 +5,5 @@ public interface DetailviewActions {
     void deleteItem();
     void selectDate();
     void pickContacts();
+    void deleteContacts();
 }

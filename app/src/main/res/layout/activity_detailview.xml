@@ -98,9 +98,9 @@
             android:layout_height="wrap_content"
             android:id="@+id/itemContactsTV"
             android:text="@{String.valueOf(item.contacts[0])}"
-            android:textSize="20sp"
-            android:padding="10dp"
-            android:hint="Contacts" />
+            android:textSize="18sp"
+            android:padding="5dp"
+            android:hint="@string/hint_contacts" />
         <Button
             android:id="@+id/btn_delete"
             style="@style/Widget.AppCompat.Button.Colored"
@@ -112,6 +112,32 @@
             android:textColor="@android:color/white"
             android:theme="@style/Delete.Button"
             android:layout_alignParentEnd="true" />
+        <Button
+            android:id="@+id/btn_delete_contacts"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:onClick="@{() -> actions.deleteContacts()}"
+            android:text="@string/btn_delete_contacts"
+            android:textAllCaps="false"
+            android:layout_toEndOf="@+id/btn_sms"
+            android:layout_below="@+id/btn_delete" />
+        <Button
+            android:id="@+id/btn_mail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_delete"
+            android:text="@string/btn_mail"
+            android:textAllCaps="false"
+            android:visibility="invisible" />
+        <Button
+            android:id="@+id/btn_sms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/btn_mail"
+            android:layout_below="@+id/btn_delete"
+            android:text="@string/btn_sms"
+            android:textAllCaps="false"
+            android:visibility="invisible" />
     </RelativeLayout>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/saveItem"

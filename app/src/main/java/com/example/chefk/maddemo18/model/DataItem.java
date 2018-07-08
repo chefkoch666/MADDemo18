@@ -9,35 +9,13 @@ import java.util.Date;
 import java.util.List;
 
 public class DataItem implements Serializable {
-    /*
-    class DataItemChainedComparator implements Comparator<DataItem> {
-
-        private List<Comparator<DataItem>> listComparators;
-
-        @SafeVarargs
-        public DataItemChainedComparator(Comparator<DataItem>... comparators) {
-            this.listComparators = Arrays.asList(comparators);
-        }
-
-        @Override
-        public int compare(DataItem emp1, DataItem emp2) {
-            for (Comparator<DataItem> comparator : listComparators) {
-                int result = comparator.compare(emp1, emp2);
-                if (result != 0) {
-                    return result;
-                }
-            }
-            return 0;
-        }
-    }
-    */
-
     private long id = -1;
     private String name;
     private String description;
     private long expiry;
     private boolean done;
     @SerializedName("favourite") private boolean favorite;
+    private List<String> contacts;
 
     public List<String> getContacts() {
         return contacts;
@@ -46,8 +24,6 @@ public class DataItem implements Serializable {
     public void setContacts(List<String> contacts) {
         this.contacts = contacts;
     }
-
-    private List<String> contacts;
 
     public DataItem() {
 

@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,7 +28,6 @@ import com.example.chefk.maddemo18.model.IDataItemCRUDOperationsAsync;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -66,23 +64,17 @@ public class OverviewActivity extends AppCompatActivity {
 
         String mycrudstatus = ((DataItemApplication)getApplication()).getCrudStatus().name();
         Log.i ("Oview-onoff", "mycrudstatus is : " + mycrudstatus);
-
-
-
         listView = findViewById(R.id.listView);
         createItemButton = findViewById(R.id.createItem);
         progress = findViewById(R.id.progressBar);
-
         this.activeSortMode = SortMode.SORT_BY_DONE;
 
         listViewAdapter = new ArrayAdapter<DataItem>(this, R.layout.activity_overview_listitem, itemsList){
             @NonNull
             @Override
             public View getView(int position, @Nullable View existingView, @NonNull ViewGroup parent) {
-
                 // obtain the data
                 DataItem item = this.getItem(position);
-
                 ListitemViewHolder viewHolder;
 
                 // obtain the view
@@ -102,7 +94,6 @@ public class OverviewActivity extends AppCompatActivity {
                 viewHolder.bind(item);
 
                 String shortExpiryDateAsString = new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(new Date(item.getExpiry()));
-
                 // set design dependant on expiry status
                 if (item.getExpiry() == 0 || item.getExpiry() == 1) { // item has no expiry -> set "none" as placeholder
                     Log.i("Overview-Expiry", "0 or 1 : Value of itemId : " + String.valueOf(item.getId()) + " expiry value is " + String.valueOf(item.getExpiry()));
@@ -232,7 +223,7 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     protected void updateItemInList(DataItem item,long itemId) {
-        Snackbar.make(findViewById(R.id.contentView),"received itemName from detailview: " + item.getName(),Snackbar.LENGTH_INDEFINITE).show();
+        Snackbar.make(findViewById(R.id.contentView),"received itemName from detailview: " + item.getName(),Snackbar.LENGTH_SHORT).show();
         Log.d("Oview", item.getName() + "itemId: " + item.getId());
         this.listViewAdapter.clear(); // delete all items from list, then crudOperations.readAllItems (EXPENSIVE)
         crudOperations.readAllItems(new IDataItemCRUDOperationsAsync.ResultCallback<List<DataItem>>() {
@@ -247,8 +238,8 @@ public class OverviewActivity extends AppCompatActivity {
     }
 
     protected void deleteItemInList(DataItem item) {
-        Snackbar.make(findViewById(R.id.contentView),"received itemId is deleted",Snackbar.LENGTH_INDEFINITE).show();
-        this.listViewAdapter.remove(item); // does nothing with "same" but different DataItem object
+        Snackbar.make(findViewById(R.id.contentView),"received itemId is deleted",Snackbar.LENGTH_SHORT).show();
+        //this.listViewAdapter.remove(item); // does nothing with "same" but different DataItem object
         crudOperations.deleteItem(item.getId(), new IDataItemCRUDOperationsAsync.ResultCallback<Boolean>() {
             @Override
             public void onresult(Boolean result) {
@@ -276,7 +267,6 @@ public class OverviewActivity extends AppCompatActivity {
     protected void showDetailviewForCreate() {
         Intent callDetailViewForCreateIntent = new Intent(this,DetailviewActivity.class);
         startActivityForResult(callDetailViewForCreateIntent,CALL_CREATE_ITEM);
-
     }
 
     @Override
@@ -285,22 +275,21 @@ public class OverviewActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 final long itemId = data.getLongExtra(DetailviewActivity.ARG_ITEM_ID, -1);
 
-               crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
-                   @Override
-                   public void onresult(DataItem result) {
-                       if (requestCode == CALL_EDIT_ITEM) {
-                           if (result == null) {
-                               Log.i("OverviewActivity", "deleteItemInList gets called.");
-                               //deleteItemInList(result); // has been deleted already via CRUD in Detailview
-                           } else {
-                               Log.i("OverviewActivity", "updateItemInList gets called.");
-                               updateItemInList(result,itemId);
-                           }
-                       } else {
-                           addItemToList(result);
-                       }
-                   }
-               });
+                crudOperations.readItem(itemId, new IDataItemCRUDOperationsAsync.ResultCallback<DataItem>() {
+                    @Override
+                    public void onresult(DataItem result) {
+                        if (requestCode == CALL_EDIT_ITEM) {
+                            if (result == null) {
+                                Log.i("OverviewActivity", "deleteItemInList was called in Dview.");
+                            } else {
+                                Log.i("OverviewActivity", "updateItemInList gets called.");
+                                updateItemInList(result,itemId);
+                            }
+                        } else {
+                            addItemToList(result);
+                        }
+                    }
+                });
             } else {
                 Toast.makeText(OverviewActivity.this, "no itemName received from detailview", Toast.LENGTH_SHORT).show();
             }
