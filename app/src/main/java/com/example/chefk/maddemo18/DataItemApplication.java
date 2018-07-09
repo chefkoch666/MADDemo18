@@ -24,7 +24,7 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
 
     public static enum CRUDStatus {ONLINE, OFFLINE}
 
-    //private IDataItemCRUDOperations crudOperations;
+    private LocalDataItemCRUDOperations crudOperations;
     private IDataItemCRUDOperations remoteOperations;
     private IDataItemCRUDOperations syncCrudOperations; // 2017
 
@@ -34,7 +34,8 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
     @Override
     public void onCreate() {
         super.onCreate();
-        //this.crudOperations = new LocalDataItemCRUDOperations(this);
+        this.crudOperations = new LocalDataItemCRUDOperations(this);
+        crudOperations.createDB(this); // idea of seperate create method
                 /*new RemoteDataItemCRUDOperationsImpl();*/
                 /*new SimpleDataItemCRUDOperationsImpl()*/
         this.remoteOperations = new RemoteDataItemCRUDOperationsImpl();
@@ -68,7 +69,6 @@ public class DataItemApplication extends Application implements IDataItemCRUDOpe
         new AsyncTask<Void,Void,List<DataItem>>() {
             @Override
             protected List<DataItem> doInBackground(Void... voids) {
-                Log.i("DIA-readAll", "how many local todos do we have? A: " + syncCrudOperations.readAllItems().size());
                 if (syncCrudOperations.readAllItems().size() == 0 && CRUDStatus.ONLINE == getCrudStatus()) { // zero local todos, request from webservice
                     return remoteOperations.readAllItems();
                 }

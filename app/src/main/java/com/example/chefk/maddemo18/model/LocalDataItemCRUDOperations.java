@@ -26,6 +26,14 @@ public class LocalDataItemCRUDOperations implements IDataItemCRUDOperations {
         }
     }
 
+    public void createDB(Context ctx) {
+        this.db = ctx.openOrCreateDatabase("mysqlitedb.sqlite",Context.MODE_PRIVATE,null);
+        if (db.getVersion() == 0) {
+            db.setVersion(1);
+            db.execSQL(CREATION_QUERY);
+        }
+    }
+
     @Override
     public long createItem(DataItem item) {
 
